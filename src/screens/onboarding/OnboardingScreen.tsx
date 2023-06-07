@@ -12,6 +12,7 @@ import {
 import { Divider } from 'react-native-paper';
 import { Colors } from '../../constants';
 import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../../utils/Responsive_layout';
+import { NavigationProp } from '@react-navigation/native';
 
 const SLIDES = [
 	{

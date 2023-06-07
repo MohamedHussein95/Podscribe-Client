@@ -1,48 +1,120 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
+	FlatList,
+	KeyboardAvoidingView,
+	PanResponder,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Appbar, ProgressBar } from 'react-native-paper';
+import SelectCountry from '../../components/SelectCountry';
 import { Colors } from '../../constants';
 import { DEVICE_WIDTH, hp, wp } from '../../utils/Responsive_layout';
-import OnboardingScreen from './OnboardingScreen';
-const CreateAccountScreen = () => {
+import ProfileSetupForm from '../../components/ProfileSetupForm';
+import CreateAccountForm from '../../components/CreateAccountForm';
+import SelectTopic from '../../components/SelectTopic';
+import DiscoverPeople from '../../components/DiscoverPeople';
+
+const CreateAccountScreen = ({ navigation }) => {
 	const [progress, setProgress] = useState(0.2);
+	const flatlistRef = useRef<FlatList>(null);
+	const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+	const updateCurrentSlideIndex = (event) => {
+		const currentIndex = Math.round(
+			event.nativeEvent.contentOffset.x / DEVICE_WIDTH
+		);
+		setCurrentSlideIndex(currentIndex);
+	};
+
+	const goToNextSlide = () => {
+		const nextSlideIndex = currentSlideIndex + 1;
+		if (nextSlideIndex < COMPONENTS.length) {
+			flatlistRef.current.scrollToOffset({
+				offset: nextSlideIndex * DEVICE_WIDTH,
+			});
+			setCurrentSlideIndex(nextSlideIndex);
+			setProgress((prev) => prev + 0.2);
+		} else if (currentSlideIndex === COMPONENTS.length - 1) {
+			navigation.replace('');
+		}
+	};
+	const goBack = () => {
+		const previousSlideIndex = currentSlideIndex - 1;
+		if (previousSlideIndex >= 0) {
+			flatlistRef.current.scrollToOffset({
+				offset: previousSlideIndex * DEVICE_WIDTH,
+			});
+			setCurrentSlideIndex(previousSlideIndex);
+			setProgress((prev) => prev - 0.2); // Decrease the progress
+		} else if (currentSlideIndex === 0) {
+			navigation.replace('OnboardingScreen');
+		}
+	};
+	const COMPONENTS = [
+		{
+			id: 'SelectCountry',
+			component: <SelectCountry onPress={goToNextSlide} />,
+		},
+		{
+			id: 'SetupProfile',
+			component: <ProfileSetupForm onPress={goToNextSlide} />,
+		},
+		{
+			id: 'createAccount',
+			component: <CreateAccountForm onPress={goToNextSlide} />,
+		},
+		{
+			id: 'SelectTopic',
+			component: <SelectTopic onPress={goToNextSlide} />,
+		},
+		{
+			id: 'DiscoverPeople',
+			component: <DiscoverPeople onPress={goToNextSlide} />,
+		},
+	];
+
 	return (
 		<View style={styles.screen}>
 			<Appbar.Header style={styles.header}>
-				<Appbar.BackAction />
+				<Appbar.BackAction
+					style={{
+						margin: 0,
+						padding: 0,
+					}}
+					size={25}
+					onPress={goBack}
+				/>
 				<ProgressBar
 					progress={progress}
 					color={Colors.primary900}
 					style={{
-						height: hp(20),
+						height: hp(15),
 						width: wp(250),
-						margin: 10,
-						marginLeft: 20,
+						marginHorizontal: 20,
 						borderRadius: 30,
 					}}
 				/>
 			</Appbar.Header>
 
-			<ScrollView style={{ flex: 1 }}></ScrollView>
-
-			<View style={styles.footer}>
-				<TouchableOpacity
-					style={styles.button}
-					activeOpacity={0.8}
-					onPress={() => setProgress((prev) => prev + 0.2)}
-				>
-					<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>
-						Next
-					</Text>
-				</TouchableOpacity>
-			</View>
+			<FlatList
+				ref={flatlistRef}
+				bounces={false}
+				data={COMPONENTS}
+				horizontal
+				pagingEnabled
+				onMomentumScrollEnd={updateCurrentSlideIndex}
+				showsHorizontalScrollIndicator={false}
+				renderItem={({ item }) => item.component}
+				contentContainerStyle={{
+					justifyContent: 'center',
+				}}
+				scrollEnabled={false} // Disable swipe gestures
+				style={{ flex: 1 }}
+			/>
 		</View>
 	);
 };
@@ -54,22 +126,10 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: Colors.white,
 	},
-	header: {},
-	footer: {
-		justifyContent: 'center',
-		alignItems: 'center',
-		elevation: 2,
-		position: 'absolute',
-		bottom: 0,
-		width: DEVICE_WIDTH,
-	},
-	button: {
-		backgroundColor: Colors.primary900,
-		width: wp(300),
-		borderRadius: 30,
-		alignItems: 'center',
-		justifyContent: 'center',
-		padding: 15,
-		marginVertical: 20,
+	header: {
+		margin: 0,
+		paddingHorizontal: wp(5),
+		justifyContent: 'flex-start',
+		backgroundColor: Colors.white,
 	},
 });

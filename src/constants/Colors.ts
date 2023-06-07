@@ -12,7 +12,7 @@ export default {
 	success: '#12D18E',
 	info: '#246BFD',
 	warning: '#FACC15',
-	Error: '#F75555',
+	error: '#F75555',
 	disabled: '#D8D8D8',
 	white: '#FFFFFF',
 	black: '#000000',
