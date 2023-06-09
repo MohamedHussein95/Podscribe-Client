@@ -21,7 +21,7 @@ const Input = ({
 			{IconPack && (
 				<IconPack
 					name={icon}
-					size={props.size || wp(20)}
+					size={props.size || wp(25)}
 					color={color}
 					onPress={onPress}
 					style={styles.icon}

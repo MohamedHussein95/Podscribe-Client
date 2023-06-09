@@ -1,40 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
-	didTryAutoLogin: false, //to conditionally render stacks
-	userInfo: null,
-	isAuth: null,
+	userInfo: {},
 };
 
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
 	reducers: {
-		setCredentials: (state, action) => {
-			try {
-				const { user } = action.payload;
-				if (user) {
-					state.userInfo = user;
-					state.isAuth = true;
-					AsyncStorage.setItem('userId', user._id);
-				}
-			} catch (error) {
-				console.error(error);
-			}
-		},
-		setDidTryAutoLogin: (state) => {
-			state.didTryAutoLogin = true;
-		},
-		clearCredentials: (state) => {
-			state.userInfo = null;
-			state.isAuth = null;
-			AsyncStorage.removeItem('userId');
+		updateUserInfo: (state, action) => {
+			const updatedInfo = { ...state.userInfo, ...action.payload };
+			state.userInfo = updatedInfo;
 		},
 	},
 });
 
-export const { setCredentials, setDidTryAutoLogin, clearCredentials } =
-	userSlice.actions;
+export const { updateUserInfo } = userSlice.actions;
 
 export default userSlice.reducer;

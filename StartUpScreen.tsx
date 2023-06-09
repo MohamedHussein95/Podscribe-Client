@@ -6,7 +6,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
 
 import { Colors } from './src/constants';
-import { setDidTryAutoLogin } from './src/store/userSlice';
+import { setDidTryAutoLogin } from './src/store/authSlice';
 
 const StartUpScreen = () => {
 	let userId = null;
@@ -22,7 +22,6 @@ const StartUpScreen = () => {
 				return;
 			}
 			try {
-				dispatch(setDidTryAutoLogin());
 			} catch (error) {
 				console.log(error);
 				dispatch(setDidTryAutoLogin());

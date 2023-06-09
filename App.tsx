@@ -10,10 +10,12 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistor } from './src/store/store';
 import store from './src/store/store';
 import AppNavigator from './src/navigation/AppNavigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+	AsyncStorage.clear();
 	const [fontsLoaded] = useFonts(Fonts);
 
 	const onLayoutRootView = useCallback(async () => {

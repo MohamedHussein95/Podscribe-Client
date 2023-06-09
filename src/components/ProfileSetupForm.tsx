@@ -1,9 +1,4 @@
-import {
-	AntDesign,
-	Entypo,
-	Feather,
-	MaterialCommunityIcons,
-} from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import React, { memo, useRef, useState } from 'react';
 import {
@@ -13,16 +8,13 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-//import DatePicker from 'react-native-date-picker';
+
 import { Avatar } from 'react-native-paper';
 import PhoneInput from 'react-native-phone-number-input';
+import { useDispatch } from 'react-redux';
 import { Colors } from '../constants';
-import {
-	DEVICE_HEIGHT,
-	DEVICE_WIDTH,
-	hp,
-	wp,
-} from '../utils/Responsive_layout';
+import { updateUserInfo } from '../store/userSlice';
+import { DEVICE_WIDTH, hp, wp } from '../utils/Responsive_layout';
 import SetupInput from './SetupInput';
 
 const ProfileSetupForm = ({ onPress }) => {
@@ -38,6 +30,25 @@ const ProfileSetupForm = ({ onPress }) => {
 
 	const [date, setDate] = useState(new Date());
 	const [open, setOpen] = useState(false);
+
+	const dispatch = useDispatch();
+
+	const handleNext = () => {
+		try {
+			dispatch(
+				updateUserInfo({
+					fullName,
+					phoneNumber: formattedValue,
+					gender: selectedDropDownvalue,
+					DOB: moment(date).format('MM/DD/YYYY'),
+					avatar: '',
+				})
+			);
+			onPress();
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	return (
 		<View style={styles.screen}>
@@ -171,7 +182,7 @@ const ProfileSetupForm = ({ onPress }) => {
 								: Colors.primary900,
 					}}
 					activeOpacity={0.8}
-					onPress={onPress}
+					onPress={handleNext}
 					disabled={
 						fullName.trim().length <= 0 ||
 						formattedValue.trim().length <= 0 ||

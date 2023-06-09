@@ -19,6 +19,10 @@ import * as yup from 'yup';
 import { Formik } from 'formik';
 import SetupInput from './SetupInput';
 import RememberMe from './RememberMe';
+import { useCreateUserMutation } from '../store/userApiSlice';
+import { setCredentials, setUserInfo } from '../store/authSlice';
+import { useDispatch } from 'react-redux';
+import { updateUserInfo } from '../store/userSlice';
 
 const registerValidationSchema = yup.object().shape({
 	userName: yup.string().required('this field is required'),
@@ -39,6 +43,30 @@ const registerValidationSchema = yup.object().shape({
 
 const CreateAccountForm = ({ onPress }) => {
 	const [checked, setChecked] = useState(true);
+	const [createUser] = useCreateUserMutation();
+	const dispatch = useDispatch();
+	const handleSignUp = async (
+		email: string,
+		password: string,
+		userName: string
+	) => {
+		try {
+			const credentionals = await createUser({ email, password }).unwrap();
+			console.log(credentionals);
+
+			dispatch(setUserInfo(credentionals));
+			dispatch(
+				updateUserInfo({
+					userName,
+				})
+			);
+
+			onPress();
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	return (
 		<View style={styles.screen}>
 			<ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -60,7 +88,9 @@ const CreateAccountForm = ({ onPress }) => {
 						confirmPassword: '',
 					}}
 					validationSchema={registerValidationSchema}
-					onSubmit={onPress}
+					onSubmit={(values) =>
+						handleSignUp(values.email, values.password, values.userName)
+					}
 				>
 					{({
 						handleChange,

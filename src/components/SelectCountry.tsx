@@ -7,9 +7,11 @@ import {
 	View,
 } from 'react-native';
 import { Avatar } from 'react-native-paper';
+import { useDispatch } from 'react-redux';
 import Input from '../components/Input';
 import { Colors } from '../constants';
-import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
+import { updateUserInfo } from '../store/userSlice';
+import { DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
 
 const FLAGS = [
 	{
@@ -29,10 +31,21 @@ const SelectCountry = ({ onPress }) => {
 	const [searchText, setSearchText] = useState('');
 	const [selected, setSelected] = useState('');
 
+	const dispatch = useDispatch();
+
 	type FlatlistItem = {
 		id: string;
 		country: string;
 		flag: string;
+	};
+
+	const handleNext = () => {
+		try {
+			dispatch(updateUserInfo({ selected }));
+			onPress();
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	const _renderItem = (item: FlatlistItem, index: number) => {
@@ -43,13 +56,13 @@ const SelectCountry = ({ onPress }) => {
 						...styles.container,
 						...{
 							borderColor:
-								selected === item.id
+								selected === item.country
 									? Colors.primary900
 									: Colors.greyScale200,
-							borderWidth: selected === item.id ? 2 : 1,
+							borderWidth: selected === item.country ? 2 : 1,
 						},
 					}}
-					onPress={() => setSelected(item.id)}
+					onPress={() => setSelected(item.country)}
 				>
 					<View>
 						<Avatar.Image
@@ -120,7 +133,7 @@ const SelectCountry = ({ onPress }) => {
 								: Colors.primary900,
 					}}
 					activeOpacity={0.8}
-					onPress={onPress}
+					onPress={handleNext}
 					disabled={selected.trim().length <= 0}
 				>
 					<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>

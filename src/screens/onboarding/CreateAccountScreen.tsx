@@ -1,22 +1,13 @@
-import React, { useMemo, useRef, useState } from 'react';
-import {
-	FlatList,
-	KeyboardAvoidingView,
-	PanResponder,
-	ScrollView,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native';
+import React, { useRef, useState } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, ProgressBar } from 'react-native-paper';
+import CreateAccountForm from '../../components/CreateAccountForm';
+import DiscoverPeople from '../../components/DiscoverPeople';
+import ProfileSetupForm from '../../components/ProfileSetupForm';
 import SelectCountry from '../../components/SelectCountry';
+import SelectTopic from '../../components/SelectTopic';
 import { Colors } from '../../constants';
 import { DEVICE_WIDTH, hp, wp } from '../../utils/Responsive_layout';
-import ProfileSetupForm from '../../components/ProfileSetupForm';
-import CreateAccountForm from '../../components/CreateAccountForm';
-import SelectTopic from '../../components/SelectTopic';
-import DiscoverPeople from '../../components/DiscoverPeople';
 
 const CreateAccountScreen = ({ navigation }) => {
 	const [progress, setProgress] = useState(0.2);
@@ -38,8 +29,6 @@ const CreateAccountScreen = ({ navigation }) => {
 			});
 			setCurrentSlideIndex(nextSlideIndex);
 			setProgress((prev) => prev + 0.2);
-		} else if (currentSlideIndex === COMPONENTS.length - 1) {
-			navigation.replace('');
 		}
 	};
 	const goBack = () => {
@@ -51,7 +40,7 @@ const CreateAccountScreen = ({ navigation }) => {
 			setCurrentSlideIndex(previousSlideIndex);
 			setProgress((prev) => prev - 0.2); // Decrease the progress
 		} else if (currentSlideIndex === 0) {
-			navigation.replace('OnboardingScreen');
+			navigation.pop();
 		}
 	};
 	const COMPONENTS = [
@@ -73,7 +62,7 @@ const CreateAccountScreen = ({ navigation }) => {
 		},
 		{
 			id: 'DiscoverPeople',
-			component: <DiscoverPeople onPress={goToNextSlide} />,
+			component: <DiscoverPeople />,
 		},
 	];
 

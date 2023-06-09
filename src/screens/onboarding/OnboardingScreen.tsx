@@ -57,7 +57,7 @@ const OnboardingScreen = ({ navigation }) => {
 			});
 			setCurrentSlideIndex(nextSlideIndex);
 		} else if (currentSlideIndex === SLIDES.length - 1) {
-			navigation.replace('CreateAccountScreen');
+			navigation.replace('LetYouInScreen');
 		}
 	};
 	const skip = () => {

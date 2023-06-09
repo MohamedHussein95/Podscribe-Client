@@ -6,40 +6,41 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Colors } from '../constants';
 import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
 import { Chip } from 'react-native-paper';
-
-const TOPICS = [
-	'Science & Technology',
-	'Design',
-	'Politics',
-	'Health',
-	'Economy',
-	'Sports',
-	'Art & Entertainment',
-	'Music',
-	'Lifestyle',
-	'Education',
-	'Social & Culture',
-	'Energy',
-	'Business',
-	'Environment',
-	'3D',
-	'Crime',
-	'Video',
-	'Government',
-];
+import { useGetTopicsMutation } from '../store/topicApiSlice';
+import { useDispatch } from 'react-redux';
+import { updateUserInfo } from '../store/userSlice';
 
 const SelectTopic = ({ onPress }) => {
-	const [selectedTopics, setSelectedTopics] = useState([]);
+	const [selectedtopics, setSelectedtopics] = useState([]);
+	const [topics, setTopics] = useState([]);
+	const [getAllTopics] = useGetTopicsMutation({});
+	const dispatch = useDispatch();
+	useEffect(() => {
+		const getTopics = async () => {
+			const data = await getAllTopics({}).unwrap();
+
+			setTopics(Object.values(data));
+		};
+		getTopics();
+	}, []);
 
 	const handleChipPress = (chip) => {
-		if (selectedTopics.includes(chip)) {
-			setSelectedTopics(selectedTopics.filter((c) => c !== chip));
+		if (selectedtopics.includes(chip)) {
+			setSelectedtopics(selectedtopics.filter((c) => c !== chip));
 		} else {
-			setSelectedTopics([...selectedTopics, chip]);
+			setSelectedtopics([...selectedtopics, chip]);
+		}
+	};
+	const handleNext = () => {
+		try {
+			dispatch(updateUserInfo({ topics: selectedtopics }));
+			onPress();
+		} catch (error) {
+			console.log(error);
 		}
 	};
 	return (
@@ -58,7 +59,7 @@ const SelectTopic = ({ onPress }) => {
 				</View>
 
 				<FlatList
-					data={TOPICS}
+					data={topics}
 					numColumns={2}
 					pagingEnabled
 					showsVerticalScrollIndicator={false}
@@ -66,10 +67,10 @@ const SelectTopic = ({ onPress }) => {
 						<Chip
 							onPress={() => handleChipPress(item)}
 							key={item}
-							selected={selectedTopics.includes(item)}
+							selected={selectedtopics.includes(item)}
 							selectedColor={Colors.white}
 							style={{
-								backgroundColor: selectedTopics.includes(item)
+								backgroundColor: selectedtopics.includes(item)
 									? Colors.primary900
 									: Colors.white,
 								borderWidth: 2,
@@ -81,7 +82,7 @@ const SelectTopic = ({ onPress }) => {
 							textStyle={{
 								fontFamily: 'Bold',
 								fontSize: wp(17),
-								color: selectedTopics.includes(item)
+								color: selectedtopics.includes(item)
 									? Colors.white
 									: Colors.primary900,
 							}}
@@ -110,13 +111,13 @@ const SelectTopic = ({ onPress }) => {
 					style={{
 						...styles.button,
 						backgroundColor:
-							selectedTopics.length <= 0
+							selectedtopics.length <= 0
 								? Colors.disabled
 								: Colors.primary900,
 					}}
 					activeOpacity={0.8}
-					onPress={onPress}
-					disabled={selectedTopics.length <= 0}
+					onPress={handleNext}
+					disabled={selectedtopics.length <= 0}
 				>
 					<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>
 						Continue

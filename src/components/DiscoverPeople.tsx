@@ -10,6 +10,10 @@ import { Avatar, Divider } from 'react-native-paper';
 import Input from '../components/Input';
 import { Colors } from '../constants';
 import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
+import { useDispatch, useSelector } from 'react-redux';
+import { useUploadUserToDBMutation } from '../store/userApiSlice';
+import { updateUserInfo } from '../store/userSlice';
+import { setAuth } from '../store/authSlice';
 
 const PEOPLE = [
 	{
@@ -35,12 +39,34 @@ const PEOPLE = [
 	},
 ];
 
-const DiscoverPEOPLE = ({ onPress }) => {
+const DiscoverPEOPLE = () => {
+	const { userInfo } = useSelector((state) => state.user);
+	const { authInfo } = useSelector((state) => state.auth);
+	console.log(userInfo);
+
+	const [uploadUser] = useUploadUserToDBMutation();
+
+	const dispatch = useDispatch();
+
 	type FlatlistItem = {
 		id: string;
 		avatar: string;
 		fullName: string;
 		username: string;
+	};
+
+	const handleSetupUser = async () => {
+		try {
+			const uid = authInfo.uid;
+
+			const data = await uploadUser({ userInfo, uid }).unwrap();
+			console.log(data);
+
+			dispatch(updateUserInfo(data));
+			dispatch(setAuth());
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	const _renderItem = (item: FlatlistItem, index: number) => {
@@ -93,7 +119,7 @@ const DiscoverPEOPLE = ({ onPress }) => {
 				<TouchableOpacity
 					style={styles.button}
 					activeOpacity={0.8}
-					onPress={onPress}
+					onPress={handleSetupUser}
 				>
 					<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>
 						Finish
