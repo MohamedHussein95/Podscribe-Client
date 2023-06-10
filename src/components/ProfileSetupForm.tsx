@@ -1,7 +1,13 @@
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+	AntDesign,
+	MaterialCommunityIcons,
+	MaterialIcons,
+} from '@expo/vector-icons';
 import moment from 'moment';
 import React, { memo, useRef, useState } from 'react';
 import {
+	ActivityIndicator,
+	Image,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -9,22 +15,27 @@ import {
 	View,
 } from 'react-native';
 
-import { Avatar } from 'react-native-paper';
+import { Avatar, Modal, Portal } from 'react-native-paper';
 import PhoneInput from 'react-native-phone-number-input';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../constants';
 import { updateUserInfo } from '../store/userSlice';
 import { DEVICE_WIDTH, hp, wp } from '../utils/Responsive_layout';
 import SetupInput from './SetupInput';
+import { pickCameraAsync, pickGalleryAsync } from '../utils/UploadImage';
+import { uploadFile } from '../utils/fileUpload';
 
 const ProfileSetupForm = ({ onPress }) => {
+	const { authInfo } = useSelector((state) => state.auth);
 	const [fullName, setFullName] = useState('');
 	const [value, setValue] = useState('');
 	const [formattedValue, setFormattedValue] = useState('');
 	const [valid, setValid] = useState(false);
 	const [showMessage, setShowMessage] = useState(false);
+	const [avatar, setAvatar] = useState('');
+	const [imageLoading, setImageLoading] = useState(false);
 	const phoneInput = useRef<PhoneInput>(null);
-
+	const [imageModalOpen, setImageModalOpen] = useState(false);
 	const [dropDownVisible, setDropDownVisible] = useState(false);
 	const [selectedDropDownvalue, setSelectedDropDownvalue] = useState('');
 
@@ -41,7 +52,7 @@ const ProfileSetupForm = ({ onPress }) => {
 					phoneNumber: formattedValue,
 					gender: selectedDropDownvalue,
 					DOB: moment(date).format('MM/DD/YYYY'),
-					avatar: '',
+					avatar,
 				})
 			);
 			onPress();
@@ -50,6 +61,41 @@ const ProfileSetupForm = ({ onPress }) => {
 		}
 	};
 
+	const handleSelectImage = async () => {
+		setImageModalOpen(true);
+	};
+	const handleCameraSelect = async () => {
+		try {
+			setImageModalOpen(false);
+			const image = await pickCameraAsync();
+			if (!image) return;
+
+			await handleImageSelect(image);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	const handleGallerySelect = async () => {
+		try {
+			setImageModalOpen(false);
+			const image = await pickGalleryAsync();
+			if (!image) return;
+
+			await handleImageSelect(image);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	const handleImageSelect = async (imgUrl: string) => {
+		try {
+			setImageLoading(true);
+			const url = await uploadFile(imgUrl, authInfo.uid, 'profilePhotos');
+			setAvatar(url);
+			setImageLoading(false);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 	return (
 		<View style={styles.screen}>
 			<ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -63,19 +109,33 @@ const ProfileSetupForm = ({ onPress }) => {
 					</Text>
 				</View>
 				<View style={styles.avatarContainer}>
-					<Avatar.Image
-						source={{
-							uri: 'https://www.publicdomainpictures.net/pictures/370000/nahled/model-men.jpg',
-						}}
-						size={90}
-					/>
-
-					<MaterialCommunityIcons
-						name='file-edit'
-						size={25}
-						style={{ position: 'absolute', bottom: -2, right: -2 }}
-						color={Colors.primary900}
-					/>
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={handleSelectImage}
+					>
+						<View style={styles.imageContainer}>
+							{avatar && !imageLoading && (
+								<Image
+									source={{ uri: avatar }}
+									resizeMode='cover'
+									style={{ width: '100%', height: '100%' }}
+								/>
+							)}
+							{!imageLoading && !avatar && (
+								<MaterialCommunityIcons
+									name='image-area'
+									size={30}
+									color={Colors.greyScale500}
+								/>
+							)}
+							{imageLoading && !avatar && (
+								<ActivityIndicator
+									size={'small'}
+									color={Colors.primary900}
+								/>
+							)}
+						</View>
+					</TouchableOpacity>
 				</View>
 				<View>
 					<Text style={styles.inputTitle}>Full Name</Text>
@@ -195,6 +255,53 @@ const ProfileSetupForm = ({ onPress }) => {
 					</Text>
 				</TouchableOpacity>
 			</View>
+			<Portal>
+				<Modal
+					visible={imageModalOpen}
+					onDismiss={() => setImageModalOpen((prev) => !prev)}
+					contentContainerStyle={styles.modalContainerStyle}
+				>
+					<View style={styles.modalContainer}>
+						<Text
+							style={{
+								fontFamily: 'Medium',
+								fontSize: 18,
+								textAlign: 'center',
+								marginBottom: 10,
+							}}
+						>
+							Choose an action
+						</Text>
+						<View
+							style={{
+								flexDirection: 'row',
+								justifyContent: 'space-around',
+							}}
+						>
+							<TouchableOpacity
+								onPress={handleCameraSelect}
+								style={styles.modalButton}
+							>
+								<MaterialIcons
+									name='camera-alt'
+									size={30}
+									color={Colors.white}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity
+								onPress={handleGallerySelect}
+								style={styles.modalButton}
+							>
+								<MaterialIcons
+									name='insert-photo'
+									size={30}
+									color={Colors.white}
+								/>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</Modal>
+			</Portal>
 		</View>
 	);
 };
@@ -250,5 +357,42 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		padding: 15,
 		marginVertical: 10,
+	},
+	imageContainer: {
+		width: wp(90),
+		height: hp(90),
+		backgroundColor: Colors.greyScale200,
+		borderRadius: 100,
+		alignItems: 'center',
+		justifyContent: 'center',
+		overflow: 'hidden',
+	},
+	containerStyle: {
+		backgroundColor: Colors.white,
+		width: wp(350),
+		alignSelf: 'center',
+		height: hp(500),
+		borderRadius: 12,
+		justifyContent: 'flex-start',
+	},
+	modalContainer: {
+		backgroundColor: 'white',
+		height: 150,
+		paddingVertical: 15,
+		paddingHorizontal: 15,
+		borderTopLeftRadius: 10,
+		borderTopRightRadius: 10,
+	},
+	modalContainerStyle: {
+		justifyContent: 'flex-end',
+		flex: 1,
+	},
+	modalButton: {
+		width: wp(80),
+		height: hp(80),
+		backgroundColor: Colors.primary900,
+		borderRadius: 50,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 });

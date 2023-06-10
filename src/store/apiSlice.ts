@@ -5,7 +5,7 @@ const baseQuery = fetchBaseQuery({
 	baseUrl: Constants.manifest?.extra?.baseURl,
 	timeout: 10000,
 });
-console.log(Constants.manifest?.extra);
+//console.log(Constants.manifest?.extra);
 
 const apiSlice = createApi({
 	reducerPath: 'apiSlice',

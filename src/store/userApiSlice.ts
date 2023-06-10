@@ -15,13 +15,29 @@ const usersApiSlice = apiSlice.injectEndpoints({
 			query: ({ body, uid }) => ({
 				url: `${USERS_URL}/addToDB/${uid}`,
 				method: 'POST',
-				body: body,
+				body,
+			}),
+		}),
+		getUsers: builder.mutation({
+			query: () => ({
+				url: `${USERS_URL}/`,
+				method: 'GET',
+			}),
+		}),
+		getUser: builder.mutation({
+			query: (id) => ({
+				url: `${USERS_URL}/${id}`,
+				method: 'GET',
 			}),
 		}),
 	}),
 	overrideExisting: true,
 });
 
-export const { useCreateUserMutation, useUploadUserToDBMutation } =
-	usersApiSlice;
+export const {
+	useCreateUserMutation,
+	useUploadUserToDBMutation,
+	useGetUsersMutation,
+	useGetUserMutation,
+} = usersApiSlice;
 export default usersApiSlice;

@@ -14,7 +14,6 @@ const AppNavigator = ({ onReady }) => {
 			{didTryAutoLogin && isAuth && <MainNavigator />}
 			{!didTryAutoLogin && !isAuth && <StartUpScreen />}
 			{didTryAutoLogin && !isAuth && <AuthNavigator />}
-			<MainNavigator />
 		</NavigationContainer>
 	);
 };

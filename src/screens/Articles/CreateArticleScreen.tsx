@@ -50,7 +50,7 @@ const CreateArticleScreen = ({ navigation }) => {
 		const getTopics = async () => {
 			const data = await getAllTopics({}).unwrap();
 
-			setTopics(Object.values(data));
+			setTopics(data);
 		};
 		getTopics();
 	}, []);
@@ -69,10 +69,15 @@ const CreateArticleScreen = ({ navigation }) => {
 		try {
 			if (title === '' || article === '') return;
 			const body = {
+				user: {
+					id: authInfo.uid,
+					avatar: authInfo.photoURL,
+					fullName: authInfo.displayName,
+				},
 				coverImage,
 				title,
 				article,
-				topics: selectedTopic,
+				topics: [selectedTopic],
 				publicationTime: publishTime,
 				commentsAllowed,
 			};
@@ -400,9 +405,19 @@ const CreateArticleScreen = ({ navigation }) => {
 								marginVertical: 10,
 							}}
 						>
-							<Text style={{ flex: 1, color: Colors.greyScale600 }}>
-								{selectedTopic}
-							</Text>
+							{topics.map((t) => {
+								if (t.id === selectedTopic) {
+									return (
+										<Text
+											key={t.id}
+											style={{ flex: 1, color: Colors.greyScale600 }}
+										>
+											{t.topic}
+										</Text>
+									);
+								}
+							})}
+
 							<MaterialCommunityIcons
 								name='menu-down'
 								size={25}
@@ -434,15 +449,17 @@ const CreateArticleScreen = ({ navigation }) => {
 											<TouchableOpacity
 												style={styles.topic}
 												onPress={() => {
-													setSelectedTopic(item);
+													setSelectedTopic(item.id);
 													setTopicsModalVisible(false);
 												}}
 											>
-												<Text style={styles.topicText}>{item}</Text>
+												<Text style={styles.topicText}>
+													{item.topic}
+												</Text>
 											</TouchableOpacity>
 										);
 									}}
-									keyExtractor={(item) => item}
+									keyExtractor={(item) => item.id}
 									ItemSeparatorComponent={
 										<View style={{ width: 10, height: 15 }} />
 									}

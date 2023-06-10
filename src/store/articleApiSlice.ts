@@ -18,11 +18,20 @@ const articleApiSlice = apiSlice.injectEndpoints({
 				body: body,
 			}),
 		}),
+		getArticleByTopic: builder.mutation({
+			query: (tid) => ({
+				url: `${ARTICLE_URL}/topic/${tid}`,
+				method: 'GET',
+			}),
+		}),
 	}),
 
 	overrideExisting: true,
 });
 
-export const { usePublishArticleMutation, useSaveArticleMutation } =
-	articleApiSlice;
+export const {
+	usePublishArticleMutation,
+	useSaveArticleMutation,
+	useGetArticleByTopicMutation,
+} = articleApiSlice;
 export default articleApiSlice;

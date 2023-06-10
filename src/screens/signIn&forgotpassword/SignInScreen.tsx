@@ -8,13 +8,19 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Appbar, Divider } from 'react-native-paper';
+import { ActivityIndicator, Appbar, Divider } from 'react-native-paper';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import { useDispatch } from 'react-redux';
 import * as yup from 'yup';
 import RememberMe from '../../components/RememberMe';
 import SetupInput from '../../components/SetupInput';
 import SocialContainer from '../../components/SocialContainer';
 import { Colors } from '../../constants';
+import { setCredentials } from '../../store/authSlice';
+import { useGetUserMutation } from '../../store/userApiSlice';
+import { updateUserInfo } from '../../store/userSlice';
 import { DEVICE_WIDTH, wp } from '../../utils/Responsive_layout';
+import { signInUser } from '../../utils/authActions';
 
 const signInValidationSchema = yup.object().shape({
 	email: yup.string().required('this field is required'),
@@ -23,12 +29,37 @@ const signInValidationSchema = yup.object().shape({
 const SignInScreen = ({ navigation }) => {
 	const [checked, setChecked] = useState(true);
 	const [showPassword, setShowPassword] = useState(false);
-	const handleSign = (email, password) => {
+	const [loading, setLoading] = useState(false);
+
+	const [getUser] = useGetUserMutation();
+	const dispatch = useDispatch();
+
+	const handleSign = async (email: string, password: string) => {
 		try {
+			setLoading(true);
+
+			const credentials = await signInUser(email, password);
+			const userId = credentials.uid;
+			console.log(userId);
+
+			const userData = await getUser(userId).unwrap();
+			console.log(userData.userData);
+
+			dispatch(updateUserInfo(userData.userData));
+			dispatch(setCredentials(credentials));
+
+			setLoading(false);
 		} catch (error) {
-			console.log(error);
+			//console.log(error);
+			setLoading(false);
+			Toast.show({
+				type: 'error',
+				text1: `${error || error?.data?.message || error?.error}`,
+				position: 'top',
+			});
 		}
 	};
+
 	return (
 		<View style={styles.screen}>
 			<ScrollView style={{ flex: 1 }}>
@@ -221,14 +252,21 @@ const SignInScreen = ({ navigation }) => {
 										onPress={handleSubmit}
 										disabled={!isValid}
 									>
-										<Text
-											style={{
-												color: Colors.white,
-												fontFamily: 'Bold',
-											}}
-										>
-											Sign In
-										</Text>
+										{loading ? (
+											<ActivityIndicator
+												size={'small'}
+												color={Colors.white}
+											/>
+										) : (
+											<Text
+												style={{
+													color: Colors.white,
+													fontFamily: 'Bold',
+												}}
+											>
+												Sign In
+											</Text>
+										)}
 									</TouchableOpacity>
 								</View>
 							</>

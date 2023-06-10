@@ -29,7 +29,7 @@ const FLAGS = [
 const SelectCountry = ({ onPress }) => {
 	const [focused, setFocused] = useState(false);
 	const [searchText, setSearchText] = useState('');
-	const [selected, setSelected] = useState('');
+	const [country, setCountry] = useState('');
 
 	const dispatch = useDispatch();
 
@@ -41,7 +41,7 @@ const SelectCountry = ({ onPress }) => {
 
 	const handleNext = () => {
 		try {
-			dispatch(updateUserInfo({ selected }));
+			dispatch(updateUserInfo({ country }));
 			onPress();
 		} catch (error) {
 			console.log(error);
@@ -56,13 +56,13 @@ const SelectCountry = ({ onPress }) => {
 						...styles.container,
 						...{
 							borderColor:
-								selected === item.country
+								country === item.country
 									? Colors.primary900
 									: Colors.greyScale200,
-							borderWidth: selected === item.country ? 2 : 1,
+							borderWidth: country === item.country ? 2 : 1,
 						},
 					}}
-					onPress={() => setSelected(item.country)}
+					onPress={() => setCountry(item.country)}
 				>
 					<View>
 						<Avatar.Image
@@ -128,13 +128,13 @@ const SelectCountry = ({ onPress }) => {
 					style={{
 						...styles.button,
 						backgroundColor:
-							selected.trim().length <= 0
+							country.trim().length <= 0
 								? Colors.disabled
 								: Colors.primary900,
 					}}
 					activeOpacity={0.8}
 					onPress={handleNext}
-					disabled={selected.trim().length <= 0}
+					disabled={country.trim().length <= 0}
 				>
 					<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>
 						Continue

@@ -70,7 +70,7 @@ const DiscoverScreen = ({ navigation }) => {
 					title={'Our Recommendations'}
 					onPress={() => navigation.navigate('RecommendationsScreen')}
 				/>
-				<ArticleDisplay title={'New Articles'} />
+				{/* <ArticleDisplay title={'New Articles'} /> */}
 			</ScrollView>
 		</View>
 	);

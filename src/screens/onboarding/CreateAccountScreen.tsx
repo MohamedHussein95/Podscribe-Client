@@ -45,6 +45,10 @@ const CreateAccountScreen = ({ navigation }) => {
 	};
 	const COMPONENTS = [
 		{
+			id: 'createAccount',
+			component: <CreateAccountForm onPress={goToNextSlide} />,
+		},
+		{
 			id: 'SelectCountry',
 			component: <SelectCountry onPress={goToNextSlide} />,
 		},
@@ -52,10 +56,7 @@ const CreateAccountScreen = ({ navigation }) => {
 			id: 'SetupProfile',
 			component: <ProfileSetupForm onPress={goToNextSlide} />,
 		},
-		{
-			id: 'createAccount',
-			component: <CreateAccountForm onPress={goToNextSlide} />,
-		},
+
 		{
 			id: 'SelectTopic',
 			component: <SelectTopic onPress={goToNextSlide} />,

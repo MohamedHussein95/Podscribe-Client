@@ -7,49 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Article from './Article';
 import { wp } from '../utils/Responsive_layout';
 
-const DATA = [
-	{
-		id: '1',
-		coverImage:
-			'https://images.pexels.com/photos/3221849/pexels-photo-3221849.png?auto=compress&cs=tinysrgb&w=600&lazy=load',
-		title: '10 Tips for Boosting Your productivity',
-		user: {
-			avatar:
-				'https://images.pexels.com/photos/3221849/pexels-photo-3221849.png?auto=compress&cs=tinysrgb&w=600&lazy=load',
-			fullName: 'Howard sadasdasdsadsadsaad',
-			userName: '@howard',
-		},
-		publicationTime: new Date().toISOString(),
-	},
-	{
-		id: '2',
-		coverImage:
-			'https://images.pexels.com/photos/2102063/pexels-photo-2102063.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-		title: 'Why Travel is the Best Investment You could ever Do',
-		user: {
-			avatar:
-				'https://images.pexels.com/photos/2102063/pexels-photo-2102063.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-			fullName: 'Bella',
-			userName: '@bella',
-		},
-		publicationTime: new Date().toISOString(),
-	},
-	{
-		id: '3',
-		coverImage:
-			'https://images.pexels.com/photos/1884579/pexels-photo-1884579.jpeg?auto=compress&cs=tinysrgb&w=1600',
-		title: 'Organize your thoughts and achieve this',
-		user: {
-			avatar:
-				'https://images.pexels.com/photos/1884579/pexels-photo-1884579.jpeg?auto=compress&cs=tinysrgb&w=1600',
-			fullName: 'John',
-			userName: '@john',
-		},
-		publicationTime: new Date().toISOString(),
-	},
-];
-
-const ArticleDisplay = ({ title }) => {
+const ArticleDisplay = ({ title, DATA }) => {
 	return (
 		<View style={styles.display}>
 			<View style={styles.header}>

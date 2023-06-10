@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useState } from 'react';
 import {
+	ActivityIndicator,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -21,8 +22,10 @@ import SetupInput from './SetupInput';
 import RememberMe from './RememberMe';
 import { useCreateUserMutation } from '../store/userApiSlice';
 import { setCredentials, setUserInfo } from '../store/authSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateUserInfo } from '../store/userSlice';
+import { toastConfig } from '../../toastConfig';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 const registerValidationSchema = yup.object().shape({
 	userName: yup.string().required('this field is required'),
@@ -42,16 +45,25 @@ const registerValidationSchema = yup.object().shape({
 });
 
 const CreateAccountForm = ({ onPress }) => {
+	const { userInfo } = useSelector((state) => state.user);
 	const [checked, setChecked] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [createUser] = useCreateUserMutation();
 	const dispatch = useDispatch();
+
 	const handleSignUp = async (
 		email: string,
 		password: string,
 		userName: string
 	) => {
 		try {
-			const credentionals = await createUser({ email, password }).unwrap();
+			setLoading(true);
+			const credentionals = await createUser({
+				email,
+				password,
+				phoneNumber: userInfo.phoneNumber,
+				photoURL: userInfo.avatar,
+			}).unwrap();
 			console.log(credentionals);
 
 			dispatch(setUserInfo(credentionals));
@@ -60,10 +72,15 @@ const CreateAccountForm = ({ onPress }) => {
 					userName,
 				})
 			);
-
 			onPress();
 		} catch (error) {
-			console.log(error);
+			setLoading(false);
+			//console.log(error);
+			Toast.show({
+				type: 'error',
+				text1: `${error || error?.data?.message || error?.error}`,
+				position: 'top',
+			});
 		}
 	};
 
@@ -202,14 +219,21 @@ const CreateAccountForm = ({ onPress }) => {
 									onPress={handleSubmit}
 									disabled={!isValid}
 								>
-									<Text
-										style={{
-											color: Colors.white,
-											fontFamily: 'Bold',
-										}}
-									>
-										Continue
-									</Text>
+									{loading ? (
+										<ActivityIndicator
+											size={'small'}
+											color={Colors.white}
+										/>
+									) : (
+										<Text
+											style={{
+												color: Colors.white,
+												fontFamily: 'Bold',
+											}}
+										>
+											Continue
+										</Text>
+									)}
 								</TouchableOpacity>
 							</View>
 						</>

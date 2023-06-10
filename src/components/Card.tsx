@@ -30,7 +30,6 @@ const Card = ({ item }: any) => {
 						borderRadius: 10,
 						width: wp(200),
 						height: hp(150),
-						backgroundColor: 'yellow',
 					}}
 					resizeMode='cover'
 				>

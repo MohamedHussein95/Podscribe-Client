@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createSlice } from '@reduxjs/toolkit';
 
 type stateProps = {
 	didTryAutoLogin: boolean;
@@ -19,12 +19,14 @@ const authSlice = createSlice({
 	reducers: {
 		setCredentials: (state, action) => {
 			try {
-				if (action.payload) {
+				if (action.payload.uid) {
 					state.authInfo = action.payload;
+					//console.log('action payload', action.payload);
+
 					state.isAuth = true;
-					AsyncStorage.setItem('userId', action.payload.uid);
+					const userId = action.payload.uid;
+					AsyncStorage.setItem('userId', userId);
 				}
-				console.log(state.authInfo);
 			} catch (error) {
 				console.error(error);
 			}
@@ -36,8 +38,8 @@ const authSlice = createSlice({
 			try {
 				if (action.payload) {
 					state.authInfo = action.payload;
-
-					AsyncStorage.setItem('userId', action.payload.uid);
+					const userId = action.payload.uid;
+					AsyncStorage.setItem('userId', userId);
 				}
 			} catch (error) {
 				console.error(error);

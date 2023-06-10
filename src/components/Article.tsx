@@ -1,19 +1,22 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
-import React, { memo } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import moment from 'moment';
-import { DEVICE_HEIGHT, hp, wp } from '../utils/Responsive_layout';
-import { Colors } from '../constants';
+import React, { memo } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { useSelector } from 'react-redux';
+import { Colors } from '../constants';
+import { hp, wp } from '../utils/Responsive_layout';
 
 const Article = ({ item }) => {
 	const { authInfo } = useSelector((state) => state.auth);
 	const { uid } = authInfo;
+
+	const owner = item?.user?.id === uid;
+
 	return (
 		<View style={styles.container}>
 			<Image
-				source={{ uri: item.coverImage }}
+				source={{ uri: item?.cover }}
 				resizeMode='cover'
 				style={styles.image}
 			/>
@@ -24,12 +27,16 @@ const Article = ({ item }) => {
 						numberOfLines={2}
 						ellipsizeMode='tail'
 					>
-						{item.title}
+						{item?.title}
 					</Text>
 				</View>
-				{item.user && (
+
+				{!owner && (
 					<View style={styles.user}>
-						<Avatar.Image source={{ uri: item.user.avatar }} size={25} />
+						<Avatar.Image
+							source={{ uri: item?.user?.avatar }}
+							size={25}
+						/>
 						<Text
 							numberOfLines={1}
 							ellipsizeMode='tail'
@@ -39,7 +46,7 @@ const Article = ({ item }) => {
 								fontFamily: 'Regular',
 							}}
 						>
-							{item.user.fullName}
+							{item?.user?.fullName}
 						</Text>
 					</View>
 				)}
@@ -51,9 +58,9 @@ const Article = ({ item }) => {
 							color: Colors.greyScale700,
 						}}
 					>
-						{moment(new Date(item.publicationTime)).fromNow()}
+						{moment(new Date(item?.publicationTime)).fromNow()}
 					</Text>
-					{uid === item.id && (
+					{owner && (
 						<>
 							<MaterialCommunityIcons
 								name='pencil-outline'
@@ -68,7 +75,7 @@ const Article = ({ item }) => {
 							/>
 						</>
 					)}
-					{uid !== item.id && (
+					{!owner && (
 						<>
 							<MaterialCommunityIcons
 								name='bookmark-minus-outline'
@@ -99,11 +106,14 @@ const styles = StyleSheet.create({
 		marginVertical: 10,
 		alignItems: 'center',
 	},
-	image: { width: wp(120), height: hp(120), borderRadius: 10 },
-	body: {
-		width: wp(235),
+	image: { width: wp(120), height: hp(100), borderRadius: 10 },
+	body: { gap: 10 },
+	title: {
+		fontFamily: 'Bold',
+		fontSize: wp(18),
+
+		textAlign: 'left',
 	},
-	title: { fontFamily: 'Bold', fontSize: wp(18) },
 	footer: {
 		flexDirection: 'row',
 		alignItems: 'center',

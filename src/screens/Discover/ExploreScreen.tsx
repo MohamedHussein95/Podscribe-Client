@@ -1,38 +1,27 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Colors } from '../../constants';
 import { Appbar } from 'react-native-paper';
 import { hp, wp } from '../../utils/Responsive_layout';
 import Category from '../../components/Category';
-
-const DATA = [
-	{
-		id: '1',
-		topic: 'Travel',
-		articles: ['2', '4'],
-		photo: 'https://images.pexels.com/photos/2245436/pexels-photo-2245436.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-	},
-	{
-		id: '2',
-		topic: 'Health',
-		articles: ['2', '4'],
-		photo: 'https://images.pexels.com/photos/1390403/pexels-photo-1390403.jpeg?auto=compress&cs=tinysrgb&w=1600',
-	},
-	{
-		id: '3',
-		topic: 'Science & Techonology',
-		articles: ['2', '4'],
-		photo: 'https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=1600',
-	},
-	{
-		id: '4',
-		topic: 'Coding',
-		articles: ['2', '4'],
-		photo: 'https://images.pexels.com/photos/879109/pexels-photo-879109.jpeg?auto=compress&cs=tinysrgb&w=1600',
-	},
-];
+import { useGetTopicsMutation } from '../../store/topicApiSlice';
+import { useDispatch } from 'react-redux';
 
 const ExploreScreen = ({ navigation }) => {
+	const [topics, setTopics] = useState({});
+	const [getAllTopics] = useGetTopicsMutation([]);
+	console.log(topics);
+
+	const dispatch = useDispatch();
+
+	useEffect(() => {
+		const getTopics = async () => {
+			const data = await getAllTopics({}).unwrap();
+
+			setTopics(data);
+		};
+		getTopics();
+	}, []);
 	return (
 		<View style={styles.screen}>
 			<Appbar.Header style={{ paddingHorizontal: 0 }}>
@@ -55,7 +44,7 @@ const ExploreScreen = ({ navigation }) => {
 			</Appbar.Header>
 			<FlatList
 				numColumns={2}
-				data={DATA}
+				data={topics}
 				showsVerticalScrollIndicator={false}
 				renderItem={({ item }) => (
 					<Category
@@ -70,6 +59,7 @@ const ExploreScreen = ({ navigation }) => {
 				contentContainerStyle={{
 					alignItems: 'center',
 					gap: 10,
+					paddingBottom: 10,
 				}}
 				style={{ flex: 1 }}
 				ListEmptyComponent={

@@ -1,3 +1,4 @@
+import React, { memo, useEffect, useState } from 'react';
 import {
 	FlatList,
 	ScrollView,
@@ -6,24 +7,25 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import React, { memo, useEffect, useState } from 'react';
-import { Colors } from '../constants';
-import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
 import { Chip } from 'react-native-paper';
-import { useGetTopicsMutation } from '../store/topicApiSlice';
 import { useDispatch } from 'react-redux';
+import { Colors } from '../constants';
+import { useGetTopicsMutation } from '../store/topicApiSlice';
 import { updateUserInfo } from '../store/userSlice';
+import { DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
 
 const SelectTopic = ({ onPress }) => {
 	const [selectedtopics, setSelectedtopics] = useState([]);
-	const [topics, setTopics] = useState([]);
-	const [getAllTopics] = useGetTopicsMutation({});
+	const [topics, setTopics] = useState({});
+	const [getAllTopics] = useGetTopicsMutation([]);
+	console.log(topics);
+
 	const dispatch = useDispatch();
 	useEffect(() => {
 		const getTopics = async () => {
 			const data = await getAllTopics({}).unwrap();
 
-			setTopics(Object.values(data));
+			setTopics(data);
 		};
 		getTopics();
 	}, []);
@@ -53,24 +55,23 @@ const SelectTopic = ({ onPress }) => {
 				</View>
 				<View style={{ marginBottom: 35 }}>
 					<Text style={styles.subTitleText}>
-						Select topic of interest fir better recommendations or you can
+						Select topic of interest for better recommendations or you can
 						skip it
 					</Text>
 				</View>
 
 				<FlatList
 					data={topics}
-					numColumns={2}
 					pagingEnabled
 					showsVerticalScrollIndicator={false}
 					renderItem={({ item }) => (
 						<Chip
-							onPress={() => handleChipPress(item)}
-							key={item}
-							selected={selectedtopics.includes(item)}
+							onPress={() => handleChipPress(item.id)}
+							key={item.id}
+							selected={selectedtopics.includes(item.id)}
 							selectedColor={Colors.white}
 							style={{
-								backgroundColor: selectedtopics.includes(item)
+								backgroundColor: selectedtopics.includes(item.id)
 									? Colors.primary900
 									: Colors.white,
 								borderWidth: 2,
@@ -82,19 +83,22 @@ const SelectTopic = ({ onPress }) => {
 							textStyle={{
 								fontFamily: 'Bold',
 								fontSize: wp(17),
-								color: selectedtopics.includes(item)
+								color: selectedtopics.includes(item.id)
 									? Colors.white
 									: Colors.primary900,
 							}}
 							compact
+							showSelectedOverlay
 						>
-							{item}
+							{item.topic}
 						</Chip>
 					)}
 					style={{
 						flex: 1,
 					}}
-					contentContainerStyle={{}}
+					contentContainerStyle={{
+						justifyContent: 'center',
+					}}
 				/>
 			</ScrollView>
 			<View style={styles.footer}>

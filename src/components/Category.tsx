@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const Category = ({ item, style }) => {
 	const { photo, topic, articles } = item;
+
 	const navigation = useNavigation();
 	return (
 		<TouchableOpacity
@@ -28,7 +29,7 @@ const Category = ({ item, style }) => {
 					style={{
 						width: '100%',
 						height: '100%',
-						backgroundColor: 'yellow',
+
 						justifyContent: 'flex-end',
 						alignItems: 'flex-start',
 					}}
@@ -65,7 +66,7 @@ const Category = ({ item, style }) => {
 						numberOfLines={1}
 						ellipsizeMode='tail'
 					>
-						{articles?.length} articles
+						{articles?.length || '0'} articles
 					</Text>
 				</View>
 			</View>

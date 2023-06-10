@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import {
 	FlatList,
 	StyleSheet,
@@ -6,64 +6,79 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Avatar, Divider } from 'react-native-paper';
+import {
+	ActivityIndicator,
+	Avatar,
+	Divider,
+	Modal,
+	Portal,
+} from 'react-native-paper';
 import Input from '../components/Input';
 import { Colors } from '../constants';
 import { DEVICE_HEIGHT, DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { useUploadUserToDBMutation } from '../store/userApiSlice';
+import {
+	useGetUsersMutation,
+	useUploadUserToDBMutation,
+} from '../store/userApiSlice';
 import { updateUserInfo } from '../store/userSlice';
 import { setAuth } from '../store/authSlice';
-
-const PEOPLE = [
-	{
-		id: '1',
-		avatar:
-			'https://www.publicdomainpictures.net/pictures/370000/nahled/model-men.jpg',
-		fullName: 'Rodolfo Goode',
-		username: '@rodolfo_goode',
-	},
-	{
-		id: '2',
-		avatar:
-			'https://www.publicdomainpictures.net/pictures/370000/nahled/blond-child.jpg',
-		fullName: 'Chieko Chute',
-		username: '@Chieko_Chute',
-	},
-	{
-		id: '3',
-		avatar:
-			'https://img.freepik.com/premium-photo/portrait-shot-handsome-pensive-romantic-serious-tanned-man-guy-basic-tshirt-looks-aside-posing-white-background-fashion-style-new-collection-offer-copy-space-ad-model-snap_163305-183211.jpg',
-		fullName: 'kyle Danford',
-		username: '@kyle_Danford',
-	},
-];
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const DiscoverPEOPLE = () => {
 	const { userInfo } = useSelector((state) => state.user);
 	const { authInfo } = useSelector((state) => state.auth);
-	console.log(userInfo);
+	const [discoveredPeople, setDiscoveredPeople] = useState([]);
+	const [followedPeople, setFollowedPeople] = useState([]);
+	const [modalVisible, setModalVisible] = useState(false);
+	console.log(followedPeople);
 
 	const [uploadUser] = useUploadUserToDBMutation();
+	const [getUsers] = useGetUsersMutation();
 
 	const dispatch = useDispatch();
 
 	type FlatlistItem = {
-		id: string;
+		uid: string;
 		avatar: string;
-		fullName: string;
+		displayName: string;
 		username: string;
 	};
 
 	const handleSetupUser = async () => {
 		try {
+			setModalVisible(true);
 			const uid = authInfo.uid;
-
-			const data = await uploadUser({ userInfo, uid }).unwrap();
+			const body = {
+				...userInfo,
+				following: followedPeople,
+				MoreInfo: {
+					website: '',
+					location: '',
+					joined: authInfo.metadata.creationTime,
+					totalReader: '',
+				},
+			};
+			console.log(body);
+			const data = await uploadUser({ body, uid }).unwrap();
 			console.log(data);
 
 			dispatch(updateUserInfo(data));
+
 			dispatch(setAuth());
+		} catch (error) {
+			setModalVisible(false);
+			console.log(error);
+		}
+	};
+	const handleFollow = async (uid: string) => {
+		try {
+			const followed = followedPeople.includes(uid);
+			if (!followed) {
+				return setFollowedPeople((prev) => [...prev, uid]);
+			}
+			const updated = followedPeople.filter((p) => p !== uid);
+			setFollowedPeople(updated);
 		} catch (error) {
 			console.log(error);
 		}
@@ -71,27 +86,58 @@ const DiscoverPEOPLE = () => {
 
 	const _renderItem = (item: FlatlistItem, index: number) => {
 		return (
-			<View>
-				<TouchableOpacity style={styles.container} onPress={() => {}}>
-					<Avatar.Image source={{ uri: item.avatar }} size={60} />
-					<View style={{ flex: 1, gap: 5 }}>
-						<Text style={styles.fullName}>{item.fullName}</Text>
-						<Text style={styles.userName}>{item.username}</Text>
-					</View>
-					<View style={styles.follow}>
-						<Text style={{ color: Colors.white, fontFamily: 'Bold' }}>
-							follow
+			<View style={styles.container}>
+				<Avatar.Image source={{ uri: item.avatar }} size={60} />
+				<View style={{ flex: 1, gap: 5 }}>
+					<Text style={styles.fullName}>{item.displayName}</Text>
+					<Text style={styles.userName}>{item.username || ''}</Text>
+				</View>
+				<TouchableOpacity
+					onPress={() => handleFollow(item.uid)}
+					activeOpacity={0.8}
+				>
+					<View
+						style={{
+							...styles.follow,
+							backgroundColor: followedPeople.includes(item.uid)
+								? Colors.white
+								: Colors.primary900,
+						}}
+					>
+						<Text
+							style={{
+								color: followedPeople.includes(item.uid)
+									? Colors.primary900
+									: Colors.white,
+								fontFamily: 'Bold',
+							}}
+						>
+							{followedPeople.includes(item.uid)
+								? 'following'
+								: 'follow'}
 						</Text>
 					</View>
 				</TouchableOpacity>
 			</View>
 		);
 	};
+	useEffect(() => {
+		const getSomeUsers = async () => {
+			try {
+				const users = await getUsers().unwrap();
+				setDiscoveredPeople(users);
+			} catch (error) {
+				console.log(error);
+			}
+		};
+		getSomeUsers();
+	}, []);
 	return (
 		<View style={styles.screen}>
 			<FlatList
 				bounces={false}
-				data={PEOPLE}
+				data={discoveredPeople}
+				keyExtractor={(item) => item.uid}
 				pagingEnabled
 				ListHeaderComponent={
 					<>
@@ -126,6 +172,59 @@ const DiscoverPEOPLE = () => {
 					</Text>
 				</TouchableOpacity>
 			</View>
+			<Portal>
+				<Modal
+					visible={modalVisible}
+					onDismiss={() => setModalVisible((prev) => !prev)}
+					contentContainerStyle={styles.containerStyle}
+				>
+					<View
+						style={{
+							backgroundColor: Colors.primary900,
+							padding: 30,
+							borderRadius: 500,
+						}}
+					>
+						<MaterialCommunityIcons
+							name='checkbox-marked'
+							size={50}
+							color={Colors.white}
+						/>
+					</View>
+					<View
+						style={{
+							padding: 30,
+						}}
+					>
+						<Text
+							style={{
+								fontFamily: 'Bold',
+								fontSize: wp(24),
+								color: Colors.primary900,
+								textAlign: 'center',
+							}}
+						>
+							Sign Up Successful!
+						</Text>
+					</View>
+					<View style={{ marginVertical: 20 }}>
+						<Text
+							style={{
+								fontFamily: 'Medium',
+								fontSize: wp(17),
+								color: Colors.black,
+								textAlign: 'center',
+							}}
+						>
+							Your account has been created.Please wait a moment,we are
+							preparing for you...
+						</Text>
+					</View>
+					<View style={{ marginVertical: 20 }}>
+						<ActivityIndicator size={'small'} color={Colors.primary900} />
+					</View>
+				</Modal>
+			</Portal>
 		</View>
 	);
 };
@@ -204,5 +303,37 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		padding: 10,
 		width: wp(90),
+		borderWidth: 2,
+		borderColor: Colors.primary900,
+	},
+	modalTitle: {
+		fontSize: 24,
+		fontFamily: 'Bold',
+		textAlign: 'center',
+		color: Colors.primary500,
+	},
+	modalContent: {
+		fontSize: 18,
+		fontFamily: 'Medium',
+		textAlign: 'center',
+		color: Colors.dark1,
+		marginVertical: 14,
+		marginBottom: 50,
+	},
+	modalImage: {
+		width: '100%',
+		height: 200,
+		resizeMode: 'contain',
+	},
+	containerStyle: {
+		backgroundColor: Colors.white,
+		padding: 20,
+		height: DEVICE_HEIGHT * 0.6,
+		width: '80%',
+		alignSelf: 'center',
+		borderRadius: 20,
+		alignItems: 'center',
+		justifyContent: 'center',
+		gap: 0,
 	},
 });

@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-
+import Toast from 'react-native-toast-message';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -11,11 +11,11 @@ import { persistor } from './src/store/store';
 import store from './src/store/store';
 import AppNavigator from './src/navigation/AppNavigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { toastConfig } from './toastConfig';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-	AsyncStorage.clear();
 	const [fontsLoaded] = useFonts(Fonts);
 
 	const onLayoutRootView = useCallback(async () => {
@@ -29,12 +29,15 @@ export default function App() {
 	}
 
 	return (
-		<Provider store={store}>
-			<PersistGate loading={null} persistor={persistor}>
+		<>
+			<Provider store={store}>
+				{/* <PersistGate loading={null} persistor={persistor}> */}
 				<PaperProvider children={undefined}>
 					<AppNavigator onReady={onLayoutRootView} />
 				</PaperProvider>
-			</PersistGate>
-		</Provider>
+				{/* </PersistGate> */}
+			</Provider>
+			<Toast config={toastConfig} />
+		</>
 	);
 }

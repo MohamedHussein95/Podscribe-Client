@@ -6,17 +6,44 @@ import SignInScreen from '../screens/signIn&forgotpassword/SignInScreen';
 import ForgotPasswordScreen from '../screens/signIn&forgotpassword/ForgotPasswordScreen';
 import OtpScreen from '../screens/signIn&forgotpassword/OtpScreen';
 import CreateNewPasswordScreen from '../screens/signIn&forgotpassword/CreateNewPasswordScreen';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator();
 
 function AuthStack() {
+	const [firstLaunch, setFirstLaunch] = useState(null);
+
+	useEffect(() => {
+		const getFirstLaunch = async () => {
+			try {
+				const firstTime = await AsyncStorage.getItem('firstLaunch');
+				if (!firstTime) {
+					setFirstLaunch(true);
+					await AsyncStorage.setItem('firstLaunch', 'true');
+				} else {
+					setFirstLaunch(false);
+				}
+			} catch (error) {
+				console.log(error);
+			}
+		};
+		getFirstLaunch();
+	}, []);
 	return (
 		<Stack.Navigator
 			screenOptions={{
 				headerShown: false,
 			}}
+			initialRouteName={firstLaunch ? 'OnboardingScreen' : 'LetYouInScreen'}
 		>
-			<Stack.Screen name='OnboardingScreen' component={OnboardingScreen} />
+			{firstLaunch && (
+				<Stack.Screen
+					name='OnboardingScreen'
+					component={OnboardingScreen}
+				/>
+			)}
+
 			<Stack.Screen name='LetYouInScreen' component={LetYouInScreen} />
 
 			<Stack.Screen
