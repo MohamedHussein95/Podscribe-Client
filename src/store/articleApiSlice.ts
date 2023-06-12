@@ -22,6 +22,28 @@ const articleApiSlice = apiSlice.injectEndpoints({
 			query: (tid) => ({
 				url: `${ARTICLE_URL}/topic/${tid}`,
 				method: 'GET',
+				timeout: 5000,
+			}),
+		}),
+		getArticles: builder.mutation({
+			query: (id) => ({
+				url: `${ARTICLE_URL}/${id}`,
+				method: 'GET',
+				timeout: 5000,
+			}),
+		}),
+		updateArticleReads: builder.mutation({
+			query: ({ uId, aId }) => ({
+				url: `${ARTICLE_URL}/reads/update/${aId}`,
+				method: 'PUT',
+				body: uId,
+			}),
+		}),
+		addToBookMarks: builder.mutation({
+			query: ({ body, aid }) => ({
+				url: `${ARTICLE_URL}/bookmark/add/${aid}`,
+				method: 'POST',
+				body: body,
 			}),
 		}),
 	}),
@@ -33,5 +55,8 @@ export const {
 	usePublishArticleMutation,
 	useSaveArticleMutation,
 	useGetArticleByTopicMutation,
+	useUpdateArticleReadsMutation,
+	useGetArticlesMutation,
+	useAddToBookMarksMutation,
 } = articleApiSlice;
 export default articleApiSlice;

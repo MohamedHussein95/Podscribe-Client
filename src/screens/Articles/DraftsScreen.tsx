@@ -14,6 +14,8 @@ import Article from '../../components/Article';
 
 const DraftsScreen = () => {
 	const { drafts } = useSelector((state) => state.articles);
+	//console.log(drafts);
+
 	const [selectedEditIcon, setSelectedEditIcon] = useState('column');
 	return (
 		<View style={styles.screen}>

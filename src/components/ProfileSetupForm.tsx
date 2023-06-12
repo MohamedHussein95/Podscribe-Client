@@ -24,6 +24,7 @@ import { DEVICE_WIDTH, hp, wp } from '../utils/Responsive_layout';
 import SetupInput from './SetupInput';
 import { pickCameraAsync, pickGalleryAsync } from '../utils/UploadImage';
 import { uploadFile } from '../utils/fileUpload';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 const ProfileSetupForm = ({ onPress }) => {
 	const { authInfo } = useSelector((state) => state.auth);
@@ -32,7 +33,7 @@ const ProfileSetupForm = ({ onPress }) => {
 	const [formattedValue, setFormattedValue] = useState('');
 	const [valid, setValid] = useState(false);
 	const [showMessage, setShowMessage] = useState(false);
-	const [avatar, setAvatar] = useState('');
+	const [avatar, setAvatar] = useState();
 	const [imageLoading, setImageLoading] = useState(false);
 	const phoneInput = useRef<PhoneInput>(null);
 	const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -94,6 +95,11 @@ const ProfileSetupForm = ({ onPress }) => {
 			setImageLoading(false);
 		} catch (error) {
 			console.log(error);
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error}`,
+				position: 'top',
+			});
 		}
 	};
 	return (

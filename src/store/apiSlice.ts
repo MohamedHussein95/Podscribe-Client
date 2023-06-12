@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 
 const baseQuery = fetchBaseQuery({
 	baseUrl: Constants.manifest?.extra?.baseURl,
-	timeout: 10000,
+	timeout: 30000,
 });
 //console.log(Constants.manifest?.extra);
 

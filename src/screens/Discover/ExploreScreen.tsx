@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 const ExploreScreen = ({ navigation }) => {
 	const [topics, setTopics] = useState({});
 	const [getAllTopics] = useGetTopicsMutation([]);
-	console.log(topics);
+	//console.log(topics);
 
 	const dispatch = useDispatch();
 

@@ -13,44 +13,88 @@ import { Colors } from '../constants';
 import moment from 'moment';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import { useAddToBookMarksMutation } from '../store/articleApiSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setBookMarks } from '../store/userSlice';
 
 const Card = ({ item }: any) => {
-	const { title, photo, user, postedAt } = item;
-	const navigation = useNavigation();
+	const { title, cover, user, postedAt } = item;
+	const { authInfo } = useSelector((state) => state.auth);
+	const { bookMarks } = useSelector((state) => state.user);
 
+	const navigation = useNavigation();
+	const dispatch = useDispatch();
+
+	const [addToBookMarks] = useAddToBookMarksMutation();
+	const handleBookMark = async () => {
+		const body = {
+			id: authInfo.uid,
+		};
+
+		try {
+			const bookMarksData = await addToBookMarks({
+				body,
+				aid: item.id,
+			}).unwrap();
+			dispatch(setBookMarks(bookMarksData));
+			Toast.show({
+				type: 'success',
+				text1: `Added To BookMarks`,
+				position: 'top',
+			});
+		} catch (error) {
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error}`,
+				position: 'top',
+			});
+		}
+	};
 	return (
 		<TouchableOpacity
 			activeOpacity={0.8}
 			onPress={() => navigation.navigate('ArticleDetailsScreen', { item })}
 		>
 			<View style={styles.card}>
-				<ImageBackground
-					source={{ uri: photo }}
-					style={{
-						borderRadius: 10,
-						width: wp(200),
-						height: hp(150),
-					}}
-					resizeMode='cover'
-				>
-					<View
-						style={{
-							alignSelf: 'flex-end',
-							backgroundColor: Colors.primary900,
-							margin: 5,
-							borderRadius: 33,
-							padding: 5,
-							justifyContent: 'center',
-							alignItems: 'center',
-						}}
+				{cover ? (
+					<ImageBackground
+						source={{ uri: cover }}
+						style={styles.cover}
+						resizeMode='cover'
 					>
-						<MaterialCommunityIcons
-							name='bookmark-minus-outline'
-							size={25}
-							color={Colors.white}
+						<View
+							style={{
+								alignSelf: 'flex-end',
+								backgroundColor: Colors.primary900,
+								margin: 5,
+								borderRadius: 33,
+								padding: 5,
+								justifyContent: 'center',
+								alignItems: 'center',
+							}}
+						>
+							<TouchableOpacity onPress={handleBookMark}>
+								<MaterialCommunityIcons
+									name={
+										bookMarks.includes(item.id)
+											? 'bookmark-minus'
+											: 'bookmark-minus-outline'
+									}
+									size={25}
+									color={Colors.white}
+								/>
+							</TouchableOpacity>
+						</View>
+					</ImageBackground>
+				) : (
+					<View style={styles.noCover}>
+						<Image
+							source={require('../../assets/images/logo_pl.png')}
+							style={styles.cover}
 						/>
 					</View>
-				</ImageBackground>
+				)}
 
 				<View style={styles.titleContainer}>
 					<Text
@@ -78,7 +122,7 @@ const Card = ({ item }: any) => {
 							numberOfLines={1}
 							ellipsizeMode='tail'
 						>
-							{moment(postedAt).fromNow()}
+							{moment(postedAt).fromNow(true)}
 						</Text>
 						<MaterialCommunityIcons name='dots-vertical' size={15} />
 					</View>
@@ -94,9 +138,9 @@ const styles = StyleSheet.create({
 	card: {
 		marginHorizontal: 10,
 		width: wp(200),
-		justifyContent: 'center',
 		alignItems: 'center',
 		overflow: 'hidden',
+		height: hp(240),
 	},
 	titleContainer: {
 		alignSelf: 'flex-start',
@@ -112,6 +156,9 @@ const styles = StyleSheet.create({
 		width: '100%',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
+
+		position: 'absolute',
+		bottom: 0,
 	},
 	userContainer: {
 		flexDirection: 'row',
@@ -132,5 +179,16 @@ const styles = StyleSheet.create({
 		fontFamily: 'SemiBold',
 		fontSize: wp(12),
 		color: Colors.primary900,
+
+		width: '90%',
+	},
+
+	noCover: {
+		backgroundColor: Colors.greyScale300,
+	},
+	cover: {
+		borderRadius: 10,
+		width: wp(200),
+		height: hp(150),
 	},
 });

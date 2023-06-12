@@ -8,7 +8,7 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Avatar } from 'react-native-paper';
+import { Avatar, Modal, Portal } from 'react-native-paper';
 import { Colors } from '../constants';
 import {
 	DEVICE_HEIGHT,
@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateUserInfo } from '../store/userSlice';
 import { toastConfig } from '../../toastConfig';
 import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import ModalLoader from './ModalLoader';
 
 const registerValidationSchema = yup.object().shape({
 	userName: yup.string().required('this field is required'),
@@ -48,6 +49,7 @@ const CreateAccountForm = ({ onPress }) => {
 	const { userInfo } = useSelector((state) => state.user);
 	const [checked, setChecked] = useState(true);
 	const [loading, setLoading] = useState(false);
+	const [modalVisible, setModalVisible] = useState(false);
 	const [createUser] = useCreateUserMutation();
 	const dispatch = useDispatch();
 
@@ -57,14 +59,14 @@ const CreateAccountForm = ({ onPress }) => {
 		userName: string
 	) => {
 		try {
-			setLoading(true);
+			setModalVisible(true);
+
 			const credentionals = await createUser({
 				email,
 				password,
 				phoneNumber: userInfo.phoneNumber,
-				photoURL: userInfo.avatar,
 			}).unwrap();
-			console.log(credentionals);
+			//console.log(credentionals);
 
 			dispatch(setUserInfo(credentionals));
 			dispatch(
@@ -72,13 +74,14 @@ const CreateAccountForm = ({ onPress }) => {
 					userName,
 				})
 			);
+			setModalVisible(false);
 			onPress();
 		} catch (error) {
-			setLoading(false);
-			//console.log(error);
+			setModalVisible(false);
+			console.log(error);
 			Toast.show({
 				type: 'error',
-				text1: `${error || error?.data?.message || error?.error}`,
+				text1: `${error?.data?.message || error?.error || error}`,
 				position: 'top',
 			});
 		}
@@ -219,27 +222,24 @@ const CreateAccountForm = ({ onPress }) => {
 									onPress={handleSubmit}
 									disabled={!isValid}
 								>
-									{loading ? (
-										<ActivityIndicator
-											size={'small'}
-											color={Colors.white}
-										/>
-									) : (
-										<Text
-											style={{
-												color: Colors.white,
-												fontFamily: 'Bold',
-											}}
-										>
-											Continue
-										</Text>
-									)}
+									<Text
+										style={{
+											color: Colors.white,
+											fontFamily: 'Bold',
+										}}
+									>
+										Continue
+									</Text>
 								</TouchableOpacity>
 							</View>
 						</>
 					)}
 				</Formik>
 			</ScrollView>
+			<ModalLoader
+				modalVisible={modalVisible}
+				onDismiss={() => setModalVisible(false)}
+			/>
 		</View>
 	);
 };

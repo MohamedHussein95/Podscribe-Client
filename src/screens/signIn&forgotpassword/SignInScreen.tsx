@@ -21,6 +21,7 @@ import { useGetUserMutation } from '../../store/userApiSlice';
 import { updateUserInfo } from '../../store/userSlice';
 import { DEVICE_WIDTH, wp } from '../../utils/Responsive_layout';
 import { signInUser } from '../../utils/authActions';
+import ModalLoader from '../../components/ModalLoader';
 
 const signInValidationSchema = yup.object().shape({
 	email: yup.string().required('this field is required'),
@@ -29,15 +30,14 @@ const signInValidationSchema = yup.object().shape({
 const SignInScreen = ({ navigation }) => {
 	const [checked, setChecked] = useState(true);
 	const [showPassword, setShowPassword] = useState(false);
-	const [loading, setLoading] = useState(false);
+	const [modalVisible, setModalVisible] = useState(false);
 
 	const [getUser] = useGetUserMutation();
 	const dispatch = useDispatch();
 
 	const handleSign = async (email: string, password: string) => {
 		try {
-			setLoading(true);
-
+			setModalVisible(true);
 			const credentials = await signInUser(email, password);
 			const userId = credentials.uid;
 			console.log(userId);
@@ -47,11 +47,10 @@ const SignInScreen = ({ navigation }) => {
 
 			dispatch(updateUserInfo(userData.userData));
 			dispatch(setCredentials(credentials));
-
-			setLoading(false);
+			setModalVisible(false);
 		} catch (error) {
 			//console.log(error);
-			setLoading(false);
+			setModalVisible(false);
 			Toast.show({
 				type: 'error',
 				text1: `${error || error?.data?.message || error?.error}`,
@@ -252,21 +251,14 @@ const SignInScreen = ({ navigation }) => {
 										onPress={handleSubmit}
 										disabled={!isValid}
 									>
-										{loading ? (
-											<ActivityIndicator
-												size={'small'}
-												color={Colors.white}
-											/>
-										) : (
-											<Text
-												style={{
-													color: Colors.white,
-													fontFamily: 'Bold',
-												}}
-											>
-												Sign In
-											</Text>
-										)}
+										<Text
+											style={{
+												color: Colors.white,
+												fontFamily: 'Bold',
+											}}
+										>
+											Sign In
+										</Text>
 									</TouchableOpacity>
 								</View>
 							</>
@@ -274,6 +266,10 @@ const SignInScreen = ({ navigation }) => {
 					</Formik>
 				</View>
 			</ScrollView>
+			<ModalLoader
+				modalVisible={modalVisible}
+				onDismiss={() => setModalVisible(false)}
+			/>
 		</View>
 	);
 };

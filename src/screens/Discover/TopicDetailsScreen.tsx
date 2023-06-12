@@ -1,34 +1,108 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { Appbar } from 'react-native-paper';
-import { Colors } from '../../constants';
-import Category from '../../components/Category';
-import { hp, wp } from '../../utils/Responsive_layout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ArticleDisplay from '../../components/ArticleDisplay';
-import { useGetArticleByTopicMutation } from '../../store/articleApiSlice';
+import React, { useEffect, useState } from 'react';
+import {
+	FlatList,
+	RefreshControl,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from 'react-native';
+import { Appbar } from 'react-native-paper';
 import { Toast } from 'react-native-toast-message/lib/src/Toast';
 import Article from '../../components/Article';
+import Category from '../../components/Category';
+import { Colors } from '../../constants';
+import { useGetArticleByTopicMutation } from '../../store/articleApiSlice';
+import { hp, wp } from '../../utils/Responsive_layout';
 
 const TopicDetailsScreen = ({ route, navigation }) => {
 	const { item } = route.params;
-	const [Articles, setArticles] = useState([]);
-	const [getArticles] = useGetArticleByTopicMutation();
-	useEffect(() => {
-		const getArticlesByTopic = async () => {
-			try {
-				const tid = item.id;
-				const articles = await getArticles(tid).unwrap();
 
-				setArticles(articles);
-			} catch (error) {
-				Toast.show({
-					type: 'error',
-					text1: `${error || error?.data?.message || error?.error}`,
-					position: 'top',
+	const [Articles, setArticles] = useState([]);
+	const [refreshing, setRefreshing] = useState(false);
+	const [sort, setSort] = useState('recent');
+
+	const [getArticles] = useGetArticleByTopicMutation();
+
+	const sortArticles = () => {
+		try {
+			if (sort === 'recent') {
+				const sortedArticles = [...Articles];
+				sortedArticles.sort((a, b) => {
+					// Convert publicationTime to Date objects for comparison
+					const dateA = new Date(a.publicationTime);
+					const dateB = new Date(b.publicationTime);
+
+					// Compare the dates
+					if (dateA > dateB) {
+						return -1; // a comes before b
+					} else if (dateB < dateA) {
+						return 1;
+					} else {
+						return 0; // no change in order
+					}
 				});
+
+				setArticles(sortedArticles);
+			} else if (sort === 'popular') {
+				const sortedArticles = [...Articles];
+				sortedArticles.sort((a, b) => {
+					if (a.reads.length > b.reads.length) {
+						return -1;
+					}
+				});
+
+				setArticles(sortedArticles);
 			}
-		};
+		} catch (error) {
+			console.error(error);
+
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error}`,
+				position: 'top',
+			});
+		}
+	};
+
+	useEffect(() => {
+		sortArticles();
+	}, [sort]);
+	const getArticlesByTopic = async () => {
+		try {
+			setRefreshing(true);
+			const tid = item.id;
+			const articles = await getArticles(tid).unwrap();
+			const sortedArticles = [...articles];
+			sortedArticles.sort((a, b) => {
+				// Convert publicationTime to Date objects for comparison
+				const dateA = new Date(a.publicationTime);
+				const dateB = new Date(b.publicationTime);
+
+				// Compare the dates
+				if (dateA > dateB) {
+					return -1; // a comes before b
+				} else if (dateB < dateA) {
+					return 1;
+				} else {
+					return 0; // no change in order
+				}
+			});
+			setArticles(sortedArticles);
+			setRefreshing(false);
+		} catch (error) {
+			setRefreshing(false);
+			console.error(error);
+
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error}`,
+				position: 'top',
+			});
+		}
+	};
+	useEffect(() => {
 		getArticlesByTopic();
 	}, []);
 
@@ -66,13 +140,45 @@ const TopicDetailsScreen = ({ route, navigation }) => {
 					<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
 						Sort by
 					</Text>
-					<MaterialCommunityIcons
-						name='arrow-right-thin'
-						size={30}
-						color={Colors.primary900}
-					/>
+					<TouchableOpacity
+						style={styles.sort}
+						onPress={() => {
+							if (sort === 'recent') {
+								setSort('popular');
+							} else {
+								setSort('recent');
+							}
+						}}
+					>
+						{sort === 'recent' ? (
+							<>
+								<Text style={styles.sortText}>Most Popular</Text>
+								<MaterialCommunityIcons
+									name='sort'
+									size={20}
+									color={Colors.primary900}
+								/>
+							</>
+						) : (
+							<>
+								<Text style={styles.sortText}>Most Recent</Text>
+								<MaterialCommunityIcons
+									name='sort'
+									size={20}
+									color={Colors.primary900}
+								/>
+							</>
+						)}
+					</TouchableOpacity>
 				</View>
 				<FlatList
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={getArticlesByTopic}
+							colors={[Colors.primary900]}
+						/>
+					}
 					data={Articles}
 					showsVerticalScrollIndicator={false}
 					renderItem={({ item }) => <Article item={item} />}
@@ -90,7 +196,7 @@ const TopicDetailsScreen = ({ route, navigation }) => {
 									color: Colors.greyScale400,
 								}}
 							>
-								You have no published articles yet!
+								No articles for this topic!
 							</Text>
 						</View>
 					}
@@ -110,6 +216,16 @@ const styles = StyleSheet.create({
 	header: {
 		flexDirection: 'row',
 		marginHorizontal: 10,
-		marginVertical: 20,
+		marginVertical: 15,
+	},
+	sort: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 5,
+	},
+	sortText: {
+		fontFamily: 'Bold',
+		fontSize: wp(15),
+		color: Colors.primary900,
 	},
 });

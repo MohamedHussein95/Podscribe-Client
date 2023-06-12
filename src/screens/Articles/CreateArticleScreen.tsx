@@ -24,15 +24,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { pickCameraAsync, pickGalleryAsync } from '../../utils/UploadImage';
 import { uploadFile } from '../../utils/fileUpload';
 import { addToDrafts, addToPublishedArticles } from '../../store/articleSlice';
+import moment from 'moment';
 
 const CreateArticleScreen = ({ navigation }) => {
 	const { authInfo } = useSelector((state) => state.auth);
+	const { userInfo } = useSelector((state) => state.user);
 	const [title, setTitle] = useState('');
 	const [article, setArticle] = useState('');
 	const [topics, setTopics] = useState([]);
 	const [coverImage, setCoverImage] = useState('');
-	const [publishTime, setPublishTime] = useState(new Date());
-	const [selectedTopic, setSelectedTopic] = useState('Select Topics');
+	const [publishTime, setPublishTime] = useState(
+		moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+	);
+	const [selectedTopics, setSelectedTopics] = useState([]);
 	const [topicsModalVisible, setTopicsModalVisible] = useState(false);
 	const [commentsAllowed, setCommentsAllowed] = useState(true);
 	const [commentsModalVisible, setCommentsModalVisible] = useState(false);
@@ -48,7 +52,8 @@ const CreateArticleScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 	useEffect(() => {
 		const getTopics = async () => {
-			const data = await getAllTopics({}).unwrap();
+			const userId = authInfo.uid;
+			const data = await getAllTopics(userId).unwrap();
 
 			setTopics(data);
 		};
@@ -73,13 +78,15 @@ const CreateArticleScreen = ({ navigation }) => {
 					id: authInfo.uid,
 					avatar: authInfo.photoURL,
 					fullName: authInfo.displayName,
+					userName: userInfo.userName,
 				},
 				coverImage,
 				title,
 				article,
-				topics: [selectedTopic],
+				topics: selectedTopics,
 				publicationTime: publishTime,
 				commentsAllowed,
+				reads: [authInfo.uid],
 			};
 			await publishArticle({ body, uid: authInfo.uid });
 			dispatch(addToPublishedArticles({ body }));
@@ -97,7 +104,7 @@ const CreateArticleScreen = ({ navigation }) => {
 				coverImage,
 				title,
 				article,
-				topics: selectedTopic,
+				topics: selectedTopics,
 				publicationTime: publishTime,
 				commentsAllowed,
 			};
@@ -143,6 +150,13 @@ const CreateArticleScreen = ({ navigation }) => {
 			setImageLoading(false);
 		} catch (error) {
 			console.log(error);
+		}
+	};
+	const handleSelectTopic = (id) => {
+		if (selectedTopics.includes(id)) {
+			setSelectedTopics(selectedTopics.filter((c) => c !== id));
+		} else {
+			setSelectedTopics([...selectedTopics, id]);
 		}
 	};
 	return (
@@ -400,23 +414,51 @@ const CreateArticleScreen = ({ navigation }) => {
 								flexDirection: 'row',
 								alignItems: 'center',
 								backgroundColor: Colors.greyScale200,
-								padding: 15,
+								padding: 10,
 								borderRadius: 10,
 								marginVertical: 10,
+								overflow: 'hidden',
 							}}
 						>
-							{topics.map((t) => {
-								if (t.id === selectedTopic) {
-									return (
-										<Text
-											key={t.id}
-											style={{ flex: 1, color: Colors.greyScale600 }}
-										>
-											{t.topic}
-										</Text>
-									);
-								}
-							})}
+							<ScrollView
+								style={{ flex: 1 }}
+								horizontal
+								showsHorizontalScrollIndicator={false}
+							>
+								{topics.map((t) => {
+									if (selectedTopics.includes(t.id)) {
+										return (
+											<TouchableOpacity
+												style={{
+													backgroundColor: Colors.primary900,
+													marginHorizontal: 5,
+													padding: 5,
+													justifyContent: 'center',
+													alignItems: 'center',
+													borderRadius: 5,
+												}}
+												key={t.id}
+												onPress={() => handleSelectTopic(t.id)}
+											>
+												<Text
+													style={{
+														flex: 1,
+														color: Colors.white,
+													}}
+												>
+													{t.topic}
+												</Text>
+											</TouchableOpacity>
+										);
+									}
+								})}
+							</ScrollView>
+
+							{selectedTopics.length === 0 && (
+								<Text style={{ flex: 1, color: Colors.greyScale600 }}>
+									Select Topic
+								</Text>
+							)}
 
 							<MaterialCommunityIcons
 								name='menu-down'
@@ -440,6 +482,17 @@ const CreateArticleScreen = ({ navigation }) => {
 									>
 										Topics
 									</Text>
+									<MaterialCommunityIcons
+										name='close'
+										size={25}
+										color={Colors.error}
+										style={{
+											position: 'absolute',
+											right: 10,
+											top: 0,
+										}}
+										onPress={() => setTopicsModalVisible(false)}
+									/>
 								</View>
 								<Divider />
 								<FlatList
@@ -447,13 +500,26 @@ const CreateArticleScreen = ({ navigation }) => {
 									renderItem={({ item }) => {
 										return (
 											<TouchableOpacity
-												style={styles.topic}
-												onPress={() => {
-													setSelectedTopic(item.id);
-													setTopicsModalVisible(false);
+												style={{
+													...styles.topic,
+													backgroundColor: selectedTopics.includes(
+														item.id
+													)
+														? Colors.primary900
+														: Colors.white,
 												}}
+												onPress={() => handleSelectTopic(item.id)}
 											>
-												<Text style={styles.topicText}>
+												<Text
+													style={{
+														...styles.topicText,
+														color: selectedTopics.includes(
+															item.id
+														)
+															? Colors.white
+															: Colors.black,
+													}}
+												>
 													{item.topic}
 												</Text>
 											</TouchableOpacity>
@@ -668,6 +734,7 @@ const styles = StyleSheet.create({
 		padding: 5,
 		justifyContent: 'center',
 		alignItems: 'center',
+		borderRadius: 4,
 	},
 	topicText: {
 		fontFamily: 'SemiBold',

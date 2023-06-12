@@ -6,17 +6,49 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Appbar, Avatar } from 'react-native-paper';
 import { Colors } from '../../constants';
 import { hp, wp } from '../../utils/Responsive_layout';
 import CardDisplay from '../../components/CardDisplay';
 import { ImageBackground } from 'react-native';
+import { useGetArticlesMutation } from '../../store/articleApiSlice';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import { useSelector } from 'react-redux';
+import { RefreshControl } from 'react-native-gesture-handler';
 
 const HomeScreen = () => {
+	const [articles, setArticles] = useState([]);
+	const [loading, setLoading] = useState(false);
+
+	const [getArticles] = useGetArticlesMutation({});
+
+	const { authInfo } = useSelector((state) => state.auth);
+
+	const getAllArticles = async () => {
+		try {
+			setLoading(true);
+			const userId = authInfo.uid;
+			const articles = await getArticles(userId).unwrap();
+			setArticles(articles);
+			setLoading(false);
+		} catch (error) {
+			setLoading(false);
+			console.log(error);
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error.message}`,
+				position: 'top',
+			});
+		}
+	};
+
+	useEffect(() => {
+		getAllArticles();
+	}, []);
 	return (
 		<View style={styles.screen}>
-			<Appbar.Header>
+			<Appbar.Header style={{ backgroundColor: Colors.white }}>
 				<View
 					style={{
 						flex: 1,
@@ -41,6 +73,12 @@ const HomeScreen = () => {
 			<ScrollView
 				style={{ flex: 1 }}
 				contentContainerStyle={{ paddingBottom: 10 }}
+				refreshControl={
+					<RefreshControl
+						refreshing={loading}
+						onRefresh={getAllArticles}
+					/>
+				}
 			>
 				<ImageBackground
 					source={require('../../../assets/images/readMore.png')}
@@ -61,9 +99,24 @@ const HomeScreen = () => {
 						</TouchableOpacity>
 					</View>
 				</ImageBackground>
-				<CardDisplay title={'Recent Articles'} />
-				<CardDisplay title={'Your Articles'} />
-				<CardDisplay title={'On Your Bookmark'} />
+				<CardDisplay
+					title={'Recent Articles'}
+					onPress={undefined}
+					DATA={articles}
+					loading={loading}
+				/>
+				<CardDisplay
+					title={'Your Articles'}
+					onPress={undefined}
+					DATA={articles}
+					loading={loading}
+				/>
+				<CardDisplay
+					title={'On Your Bookmark'}
+					onPress={undefined}
+					DATA={articles}
+					loading={loading}
+				/>
 			</ScrollView>
 		</View>
 	);

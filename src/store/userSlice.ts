@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
 	userInfo: {},
+	bookMarks: [],
 };
 
 const userSlice = createSlice({
@@ -14,9 +15,12 @@ const userSlice = createSlice({
 
 			state.userInfo = updatedInfo;
 		},
+		setBookMarks: (state, action) => {
+			state.bookMarks = action.payload;
+		},
 	},
 });
 
-export const { updateUserInfo } = userSlice.actions;
+export const { updateUserInfo, setBookMarks } = userSlice.actions;
 
 export default userSlice.reducer;

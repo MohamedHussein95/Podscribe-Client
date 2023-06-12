@@ -22,8 +22,10 @@ import {
 	useUploadUserToDBMutation,
 } from '../store/userApiSlice';
 import { updateUserInfo } from '../store/userSlice';
-import { setAuth } from '../store/authSlice';
+import { setAuth, setCredentials, setUserInfo } from '../store/authSlice';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import FollowUser from './FollowUser';
 
 const DiscoverPEOPLE = () => {
 	const { userInfo } = useSelector((state) => state.user);
@@ -31,19 +33,11 @@ const DiscoverPEOPLE = () => {
 	const [discoveredPeople, setDiscoveredPeople] = useState([]);
 	const [followedPeople, setFollowedPeople] = useState([]);
 	const [modalVisible, setModalVisible] = useState(false);
-	console.log(followedPeople);
 
 	const [uploadUser] = useUploadUserToDBMutation();
 	const [getUsers] = useGetUsersMutation();
 
 	const dispatch = useDispatch();
-
-	type FlatlistItem = {
-		uid: string;
-		avatar: string;
-		displayName: string;
-		username: string;
-	};
 
 	const handleSetupUser = async () => {
 		try {
@@ -51,7 +45,7 @@ const DiscoverPEOPLE = () => {
 			const uid = authInfo.uid;
 			const body = {
 				...userInfo,
-				following: followedPeople,
+				following: followedPeople || [''],
 				MoreInfo: {
 					website: '',
 					location: '',
@@ -59,75 +53,41 @@ const DiscoverPEOPLE = () => {
 					totalReader: '',
 				},
 			};
-			console.log(body);
+			//console.log(body);
 			const data = await uploadUser({ body, uid }).unwrap();
-			console.log(data);
+			//console.log(data);
 
-			dispatch(updateUserInfo(data));
-
-			dispatch(setAuth());
+			dispatch(updateUserInfo(data.userData));
+			dispatch(setCredentials(data.authData));
 		} catch (error) {
 			setModalVisible(false);
 			console.log(error);
 		}
 	};
-	const handleFollow = async (uid: string) => {
+	const handleFollow = async (id: string) => {
 		try {
-			const followed = followedPeople.includes(uid);
+			const followed = followedPeople.includes(id);
 			if (!followed) {
-				return setFollowedPeople((prev) => [...prev, uid]);
+				return setFollowedPeople((prev) => [...prev, id]);
 			}
-			const updated = followedPeople.filter((p) => p !== uid);
+			const updated = followedPeople.filter((p) => p !== id);
 			setFollowedPeople(updated);
 		} catch (error) {
 			console.log(error);
 		}
 	};
-
-	const _renderItem = (item: FlatlistItem, index: number) => {
-		return (
-			<View style={styles.container}>
-				<Avatar.Image source={{ uri: item.avatar }} size={60} />
-				<View style={{ flex: 1, gap: 5 }}>
-					<Text style={styles.fullName}>{item.displayName}</Text>
-					<Text style={styles.userName}>{item.username || ''}</Text>
-				</View>
-				<TouchableOpacity
-					onPress={() => handleFollow(item.uid)}
-					activeOpacity={0.8}
-				>
-					<View
-						style={{
-							...styles.follow,
-							backgroundColor: followedPeople.includes(item.uid)
-								? Colors.white
-								: Colors.primary900,
-						}}
-					>
-						<Text
-							style={{
-								color: followedPeople.includes(item.uid)
-									? Colors.primary900
-									: Colors.white,
-								fontFamily: 'Bold',
-							}}
-						>
-							{followedPeople.includes(item.uid)
-								? 'following'
-								: 'follow'}
-						</Text>
-					</View>
-				</TouchableOpacity>
-			</View>
-		);
-	};
 	useEffect(() => {
 		const getSomeUsers = async () => {
 			try {
-				const users = await getUsers().unwrap();
+				const users = await getUsers({}).unwrap();
 				setDiscoveredPeople(users);
 			} catch (error) {
 				console.log(error);
+				Toast.show({
+					type: 'error',
+					text1: `${error?.data?.message || error?.error || error}`,
+					position: 'top',
+				});
 			}
 		};
 		getSomeUsers();
@@ -137,7 +97,7 @@ const DiscoverPEOPLE = () => {
 			<FlatList
 				bounces={false}
 				data={discoveredPeople}
-				keyExtractor={(item) => item.uid}
+				keyExtractor={(item) => item.id}
 				pagingEnabled
 				ListHeaderComponent={
 					<>
@@ -153,7 +113,13 @@ const DiscoverPEOPLE = () => {
 				}
 				ListHeaderComponentStyle={{}}
 				showsVerticalScrollIndicator={false}
-				renderItem={({ item, index }) => _renderItem(item, index)}
+				renderItem={({ item }) => (
+					<FollowUser
+						item={item}
+						onPress={(id: string) => handleFollow(id)}
+						followedPeople={followedPeople}
+					/>
+				)}
 				getItemLayout={(data, index) => ({
 					length: DEVICE_WIDTH,
 					offset: DEVICE_WIDTH * index,
@@ -302,7 +268,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		padding: 10,
-		width: wp(90),
+		width: wp(100),
 		borderWidth: 2,
 		borderColor: Colors.primary900,
 	},

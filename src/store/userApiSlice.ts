@@ -30,6 +30,12 @@ const usersApiSlice = apiSlice.injectEndpoints({
 				method: 'GET',
 			}),
 		}),
+		getUserFollowersFollowings: builder.mutation({
+			query: (id) => ({
+				url: `${USERS_URL}/followers_followings/${id}`,
+				method: 'GET',
+			}),
+		}),
 	}),
 	overrideExisting: true,
 });
@@ -39,5 +45,6 @@ export const {
 	useUploadUserToDBMutation,
 	useGetUsersMutation,
 	useGetUserMutation,
+	useGetUserFollowersFollowingsMutation,
 } = usersApiSlice;
 export default usersApiSlice;

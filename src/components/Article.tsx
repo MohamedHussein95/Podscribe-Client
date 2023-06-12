@@ -1,94 +1,97 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import moment from 'moment';
-import React, { memo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { Avatar } from 'react-native-paper';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
 import { useSelector } from 'react-redux';
-import { Colors } from '../constants';
 import { hp, wp } from '../utils/Responsive_layout';
+import { Avatar } from 'react-native-paper';
+import moment from 'moment';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Colors } from '../constants';
+import { useNavigation } from '@react-navigation/native';
 
 const Article = ({ item }) => {
+	const { cover, title, user, publicationTime } = item;
+	//console.log(item);
+
 	const { authInfo } = useSelector((state) => state.auth);
 	const { uid } = authInfo;
 
-	const owner = item?.user?.id === uid;
+	const owner = uid === user.id;
 
+	const date = new Date(publicationTime);
+	const postedAt = moment(date).fromNow();
+
+	const navigation = useNavigation();
 	return (
-		<View style={styles.container}>
-			<Image
-				source={{ uri: item?.cover }}
-				resizeMode='cover'
-				style={styles.image}
-			/>
-			<View style={styles.body}>
-				<View style={styles.titleContainer}>
-					<Text
-						style={styles.title}
-						numberOfLines={2}
-						ellipsizeMode='tail'
-					>
-						{item?.title}
-					</Text>
-				</View>
-
-				{!owner && (
-					<View style={styles.user}>
-						<Avatar.Image
-							source={{ uri: item?.user?.avatar }}
-							size={25}
+		<View style={{ ...styles.article, height: owner ? hp(100) : hp(120) }}>
+			<View>
+				{cover ? (
+					<Image source={{ uri: cover }} style={styles.cover} />
+				) : (
+					<View style={styles.noCover}>
+						<Image
+							source={require('../../assets/images/logo_pl.png')}
+							style={styles.cover}
 						/>
-						<Text
-							numberOfLines={1}
-							ellipsizeMode='tail'
-							style={{
-								fontSize: wp(12),
-								color: Colors.primary900,
-								fontFamily: 'Regular',
-							}}
-						>
-							{item?.user?.fullName}
-						</Text>
 					</View>
 				)}
-
+			</View>
+			<View
+				style={{
+					...styles.body,
+					justifyContent: owner ? 'space-evenly' : 'space-between',
+					marginVertical: owner ? 0 : 5,
+				}}
+			>
+				<TouchableOpacity
+					activeOpacity={0.8}
+					onPress={() =>
+						navigation.navigate('ArticleDetailsScreen', { item })
+					}
+				>
+					<View style={styles.header}>
+						<Text
+							style={styles.title}
+							numberOfLines={2}
+							ellipsizeMode='tail'
+						>
+							{title}
+						</Text>
+					</View>
+				</TouchableOpacity>
+				{!owner && (
+					<View style={styles.userContainer}>
+						<Avatar.Image source={{ uri: user.avatar }} size={30} />
+						<Text style={styles.userFullName}>{user.fullName}</Text>
+					</View>
+				)}
 				<View style={styles.footer}>
-					<Text
-						style={{
-							flex: 1,
-							color: Colors.greyScale700,
-						}}
-					>
-						{moment(new Date(item?.publicationTime)).fromNow()}
-					</Text>
-					{owner && (
-						<>
+					<Text>{postedAt}</Text>
+					{owner ? (
+						<View style={styles.iconContainer}>
 							<MaterialCommunityIcons
 								name='pencil-outline'
-								size={25}
-								color={Colors.greyScale700}
+								color={Colors.greyScale800}
+								size={20}
 							/>
 							<MaterialCommunityIcons
 								name='dots-vertical'
-								size={25}
-								style={{ marginLeft: 5 }}
-								color={Colors.greyScale700}
+								color={Colors.greyScale800}
+								size={20}
 							/>
-						</>
-					)}
-					{!owner && (
-						<>
+						</View>
+					) : (
+						<View style={styles.iconContainer}>
 							<MaterialCommunityIcons
 								name='bookmark-minus-outline'
-								size={25}
-								color={Colors.greyScale700}
+								color={Colors.greyScale800}
+								size={20}
 							/>
 							<MaterialCommunityIcons
 								name='dots-vertical'
-								size={25}
-								style={{ marginLeft: 5 }}
-								color={Colors.greyScale700}
+								color={Colors.greyScale800}
+								size={20}
 							/>
-						</>
+						</View>
 					)}
 				</View>
 			</View>
@@ -96,34 +99,55 @@ const Article = ({ item }) => {
 	);
 };
 
-export default memo(Article);
+export default Article;
 
 const styles = StyleSheet.create({
-	container: {
+	article: {
 		flexDirection: 'row',
-		gap: 15,
 		width: '100%',
+		height: hp(120),
+		alignSelf: 'center',
 		marginVertical: 10,
-		alignItems: 'center',
-	},
-	image: { width: wp(120), height: hp(100), borderRadius: 10 },
-	body: { gap: 10 },
-	title: {
-		fontFamily: 'Bold',
-		fontSize: wp(18),
 
-		textAlign: 'left',
+		gap: 10,
+	},
+	cover: {
+		width: wp(120),
+		height: '100%',
+		borderRadius: 5,
+	},
+	userContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 5,
 	},
 	footer: {
 		flexDirection: 'row',
+		justifyContent: 'space-between',
 		alignItems: 'center',
 	},
-	titleContainer: {},
-	user: {
+	header: {},
+	title: {
+		fontFamily: 'SemiBold',
+		fontSize: wp(18),
+	},
+	body: {
+		justifyContent: 'space-between',
+		width: '62%',
+		marginVertical: 5,
+	},
+	iconContainer: {
 		flexDirection: 'row',
-		gap: 4,
 		alignItems: 'center',
-		marginVertical: 4,
+		gap: 10,
 	},
-	fullName: {},
+	noCover: {
+		backgroundColor: Colors.greyScale300,
+		borderRadius: 5,
+	},
+	userFullName: {
+		fontFamily: 'Regular',
+		fontSize: wp(12),
+		color: Colors.primary900,
+	},
 });

@@ -16,16 +16,25 @@ const articleSlice = createSlice({
 		addToPublishedArticles: (state, action) => {
 			const updatedArticles = [...state.published, action.payload.body];
 			state.published = updatedArticles;
-			console.log(state.published);
+			//console.log(state.published);
 		},
 		addToDrafts: (state, action) => {
 			const updatedArticles = [...state.drafts, action.payload.body];
 			state.drafts = updatedArticles;
-			console.log(state.drafts);
+			//console.log(state.drafts);
+		},
+		setDrafts: (state, action) => {
+			state.drafts = action.payload;
+			//console.log(state.drafts);
+		},
+		setPublished: (state, action) => {
+			state.published = action.payload;
+			//console.log(state.published);
 		},
 	},
 });
 
-export const { addToDrafts, addToPublishedArticles } = articleSlice.actions;
+export const { addToDrafts, addToPublishedArticles, setDrafts, setPublished } =
+	articleSlice.actions;
 
 export default articleSlice.reducer;

@@ -5,19 +5,54 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Colors } from '../../constants';
 import { Appbar, Avatar, Divider } from 'react-native-paper';
 import { hp, wp } from '../../utils/Responsive_layout';
 import { StatusBar } from 'expo-status-bar';
+import { useSelector } from 'react-redux';
+import { useUpdateArticleReadsMutation } from '../../store/articleApiSlice';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 const ArticleDetailsScreen = ({ route, navigation }) => {
-	const { title, photo, user, postedAt } = route.params.item;
+	const { authInfo } = useSelector((state) => state.auth);
+	const { id, title, cover, user, publicationTime, reads } = route.params.item;
+	//console.log(route.params.item);
+
+	const alreadyRead = reads?.includes(authInfo.uid);
+
+	const [updateReads] = useUpdateArticleReadsMutation();
+
+	useEffect(() => {
+		const updateArticleReads = async () => {
+			try {
+				if (!alreadyRead) {
+					const aId = id;
+					console.log(id);
+
+					const uId = { uId: authInfo.uid };
+					const data = await updateReads({
+						uId,
+						aId,
+					}).unwrap();
+				}
+			} catch (error) {
+				console.log(error);
+
+				Toast.show({
+					type: 'error',
+					text1: `${error?.data?.message || error?.error || error}`,
+					position: 'top',
+				});
+			}
+		};
+		updateArticleReads();
+	}, []);
 	return (
 		<View style={styles.screen}>
 			<StatusBar style='dark' />
 			<ImageBackground
-				source={{ uri: photo }}
+				source={{ uri: cover }}
 				style={{ width: '100%', height: hp(400) }}
 				resizeMode='cover'
 			>

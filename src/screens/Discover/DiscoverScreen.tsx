@@ -1,21 +1,62 @@
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import {
+	Image,
+	RefreshControl,
+	ScrollView,
+	StyleSheet,
+	View,
+} from 'react-native';
 import { Appbar } from 'react-native-paper';
-import { hp, wp } from '../../utils/Responsive_layout';
-import { Colors } from '../../constants';
-import Input from '../../components/Input';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 import CardDisplay from '../../components/CardDisplay';
 import CategoryDisplay from '../../components/CategoryDisplay';
+import Input from '../../components/Input';
 import WriterDisplay from '../../components/WriterDisplay';
-import ArticleDisplay from '../../components/ArticleDisplay';
+import { Colors } from '../../constants';
+import { useGetArticlesMutation } from '../../store/articleApiSlice';
+import { useGetUsersMutation } from '../../store/userApiSlice';
+import { hp, wp } from '../../utils/Responsive_layout';
+import { useSelector } from 'react-redux';
 
 const DiscoverScreen = ({ navigation }) => {
 	const [searchText, setSearchText] = useState('');
 	const [focused, setFocused] = useState(false);
+	const [articles, setArticles] = useState([]);
+	const [users, setUsers] = useState([]);
+	const [getUsers] = useGetUsersMutation();
+	const [loading, setLoading] = useState(false);
+	const [getArticles] = useGetArticlesMutation({});
+
+	const { authInfo } = useSelector((state) => state.auth);
+
+	const getAllArticles = async () => {
+		try {
+			setLoading(true);
+			const userId = authInfo.uid;
+			const articles = await getArticles(userId).unwrap();
+			const users = await getUsers({}).unwrap();
+			setArticles(articles);
+			setUsers(users);
+			setLoading(false);
+		} catch (error) {
+			setLoading(false);
+			console.log(error);
+			Toast.show({
+				type: 'error',
+				text1: `${error?.data?.message || error?.error || error.message}`,
+				position: 'top',
+			});
+		}
+	};
+
+	useEffect(() => {
+		getAllArticles();
+	}, []);
+
 	return (
 		<View style={styles.screen}>
-			<Appbar.Header>
+			<Appbar.Header style={{ backgroundColor: Colors.white }}>
 				<View
 					style={{
 						flex: 1,
@@ -41,7 +82,15 @@ const DiscoverScreen = ({ navigation }) => {
 					color={Colors.black}
 				/>
 			</Appbar.Header>
-			<ScrollView style={{ flex: 1 }}>
+			<ScrollView
+				style={{ flex: 1 }}
+				refreshControl={
+					<RefreshControl
+						refreshing={loading}
+						onRefresh={getAllArticles}
+					/>
+				}
+			>
 				<Input
 					placeholder={'Search for articles or writer'}
 					onChangeText={setSearchText}
@@ -53,22 +102,34 @@ const DiscoverScreen = ({ navigation }) => {
 					IconPack={MaterialCommunityIcons}
 					icon='magnify'
 					containerStyle={styles.inputContainer}
+					iconRight={undefined}
+					color={undefined}
+					touched={undefined}
+					errors={undefined}
+					onPressIconRight={undefined}
+					onPressIconLeft={undefined}
 				/>
 				<CardDisplay
 					title={'Most Popular'}
-					onPress={() => navigation.navigate('PopularArticlesScreen')}
+					DATA={articles}
+					loading={loading}
 				/>
 				<CategoryDisplay
 					title={'Explore by Topics'}
 					onPress={() => navigation.navigate('ExploreScreen')}
+					loading={loading}
 				/>
 				<WriterDisplay
 					title={'Top Writers'}
 					onPress={() => navigation.navigate('WritersScreen')}
+					DATA={users}
+					loading={loading}
 				/>
 				<CardDisplay
 					title={'Our Recommendations'}
 					onPress={() => navigation.navigate('RecommendationsScreen')}
+					DATA={articles}
+					loading={loading}
 				/>
 				{/* <ArticleDisplay title={'New Articles'} /> */}
 			</ScrollView>

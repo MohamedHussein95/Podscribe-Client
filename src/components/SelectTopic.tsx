@@ -8,17 +8,22 @@ import {
 	View,
 } from 'react-native';
 import { Chip } from 'react-native-paper';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../constants';
-import { useGetTopicsMutation } from '../store/topicApiSlice';
+import {
+	useGetAllTopicsMutation,
+	useGetTopicsMutation,
+} from '../store/topicApiSlice';
 import { updateUserInfo } from '../store/userSlice';
 import { DEVICE_WIDTH, wp } from '../utils/Responsive_layout';
+import { useIsFocused } from '@react-navigation/native';
 
 const SelectTopic = ({ onPress }) => {
 	const [selectedtopics, setSelectedtopics] = useState([]);
 	const [topics, setTopics] = useState({});
-	const [getAllTopics] = useGetTopicsMutation([]);
-	console.log(topics);
+	const [getAllTopics] = useGetAllTopicsMutation();
+
+	//console.log(topics);
 
 	const dispatch = useDispatch();
 	useEffect(() => {

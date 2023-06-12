@@ -4,9 +4,15 @@ const TOPICS_URL = '/topics';
 
 const topicApiSlice = apiSlice.injectEndpoints({
 	endpoints: (builder) => ({
-		getTopics: builder.mutation({
+		getAllTopics: builder.mutation({
 			query: () => ({
 				url: `${TOPICS_URL}/`,
+				method: 'Get',
+			}),
+		}),
+		getTopics: builder.mutation({
+			query: (id) => ({
+				url: `${TOPICS_URL}/${id}`,
 				method: 'Get',
 			}),
 		}),
@@ -14,5 +20,5 @@ const topicApiSlice = apiSlice.injectEndpoints({
 	overrideExisting: true,
 });
 
-export const { useGetTopicsMutation } = topicApiSlice;
+export const { useGetTopicsMutation, useGetAllTopicsMutation } = topicApiSlice;
 export default topicApiSlice;

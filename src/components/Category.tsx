@@ -29,7 +29,6 @@ const Category = ({ item, style }) => {
 					style={{
 						width: '100%',
 						height: '100%',
-
 						justifyContent: 'flex-end',
 						alignItems: 'flex-start',
 					}}
