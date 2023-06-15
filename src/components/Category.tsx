@@ -1,21 +1,14 @@
-import {
-	Image,
-	ImageBackground,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native';
 import React from 'react';
-import { hp, wp } from '../utils/Responsive_layout';
-import { Colors } from '../constants';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { hp, wp } from '../utils/Responsive_layout';
+import { Colors } from '../constants';
 
 const Category = ({ item, style }) => {
 	const { photo, topic, articles } = item;
-
 	const navigation = useNavigation();
+
 	return (
 		<TouchableOpacity
 			style={{ ...styles.category, ...style }}
@@ -26,33 +19,17 @@ const Category = ({ item, style }) => {
 				<Image
 					source={{ uri: photo }}
 					resizeMode='cover'
-					style={{
-						width: '100%',
-						height: '100%',
-						justifyContent: 'flex-end',
-						alignItems: 'flex-start',
-					}}
+					style={styles.image}
 				/>
 
 				<LinearGradient
 					colors={[Colors.black, 'transparent']}
 					start={{ x: 0, y: 1 }}
 					end={{ x: 0, y: 0 }}
-					style={{
-						position: 'absolute',
-						width: '100%',
-						height: '80%',
-						bottom: 0,
-					}}
+					style={styles.gradient}
 				/>
-				<View
-					style={{
-						position: 'absolute',
-						bottom: 8,
-						left: 8,
-						width: '65%',
-					}}
-				>
+
+				<View style={styles.detailsContainer}>
 					<Text
 						style={styles.topic}
 						numberOfLines={1}
@@ -60,11 +37,7 @@ const Category = ({ item, style }) => {
 					>
 						{topic}
 					</Text>
-					<Text
-						style={styles.articles}
-						numberOfLines={1}
-						ellipsizeMode='tail'
-					>
+					<Text style={styles.articles}>
 						{articles?.length || '0'} articles
 					</Text>
 				</View>
@@ -82,6 +55,24 @@ const styles = StyleSheet.create({
 		height: hp(100),
 		overflow: 'hidden',
 		borderRadius: 10,
+	},
+	image: {
+		width: '100%',
+		height: '100%',
+		justifyContent: 'flex-end',
+		alignItems: 'flex-start',
+	},
+	gradient: {
+		position: 'absolute',
+		width: '100%',
+		height: '80%',
+		bottom: 0,
+	},
+	detailsContainer: {
+		position: 'absolute',
+		bottom: 8,
+		left: 8,
+		width: '65%',
 	},
 	topic: {
 		fontFamily: 'SemiBold',

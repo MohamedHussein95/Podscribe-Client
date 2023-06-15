@@ -2,6 +2,7 @@ import {
 	FlatList,
 	Image,
 	ImageBackground,
+	Platform,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -25,6 +26,8 @@ import { pickCameraAsync, pickGalleryAsync } from '../../utils/UploadImage';
 import { uploadFile } from '../../utils/fileUpload';
 import { addToDrafts, addToPublishedArticles } from '../../store/articleSlice';
 import moment from 'moment';
+import ModalLoader from '../../components/ModalLoader';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 const CreateArticleScreen = ({ navigation }) => {
 	const { authInfo } = useSelector((state) => state.auth);
@@ -43,12 +46,12 @@ const CreateArticleScreen = ({ navigation }) => {
 	const [imageModalOpen, setImageModalOpen] = useState(false);
 	const [selectedEditIcon, setSelectedEditIcon] = useState('');
 	const [imageLoading, setImageLoading] = useState(false);
-	const [loading, setLoading] = useState(false);
+
 	const articleInputRef = useRef();
 	const [getAllTopics] = useGetTopicsMutation({});
 	const [publishArticle] = usePublishArticleMutation({});
 	const [saveArticle] = useSaveArticleMutation({});
-
+	const [modalVisible, setModalVisible] = useState(false);
 	const dispatch = useDispatch();
 	useEffect(() => {
 		const getTopics = async () => {
@@ -73,6 +76,8 @@ const CreateArticleScreen = ({ navigation }) => {
 	const handlePublishArticle = async () => {
 		try {
 			if (title === '' || article === '') return;
+			setModalVisible(true);
+
 			const body = {
 				user: {
 					id: authInfo.uid,
@@ -93,7 +98,9 @@ const CreateArticleScreen = ({ navigation }) => {
 			setTitle('');
 			setCoverImage('');
 			setArticle('');
+			setModalVisible(false);
 		} catch (error) {
+			setModalVisible(false);
 			console.log(error);
 		}
 	};
@@ -115,6 +122,11 @@ const CreateArticleScreen = ({ navigation }) => {
 			setArticle('');
 		} catch (error) {
 			console.log(error);
+			Toast.show({
+				type: 'error',
+				text1: `${error || error?.data?.message || error?.error}`,
+				position: 'top',
+			});
 		}
 	};
 	const handleSelectImage = async () => {
@@ -636,7 +648,15 @@ const CreateArticleScreen = ({ navigation }) => {
 				<Modal
 					visible={imageModalOpen}
 					onDismiss={() => setImageModalOpen((prev) => !prev)}
-					contentContainerStyle={styles.modalContainerStyle}
+					contentContainerStyle={
+						Platform.OS === 'android'
+							? styles.modalContainerStyle
+							: {
+									position: 'absolute',
+									bottom: 0,
+									width: '100%',
+							  }
+					}
 				>
 					<View style={styles.modalContainer}>
 						<Text
@@ -679,6 +699,10 @@ const CreateArticleScreen = ({ navigation }) => {
 					</View>
 				</Modal>
 			</Portal>
+			<ModalLoader
+				modalVisible={modalVisible}
+				onDismiss={() => setModalVisible(false)}
+			/>
 		</View>
 	);
 };
@@ -754,12 +778,11 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	modalButton: {
-		width: wp(80),
-		height: hp(80),
+		width: Platform.OS == 'android' ? wp(80) : wp(80),
+		height: Platform.OS == 'android' ? hp(80) : hp(70),
 		backgroundColor: Colors.primary900,
 		borderRadius: 50,
 		justifyContent: 'center',
 		alignItems: 'center',
-		// marginRight: 20,
 	},
 });

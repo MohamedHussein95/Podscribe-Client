@@ -5,7 +5,6 @@ export const signInUser = async (email: string, password: string) => {
 	let res;
 	try {
 		res = await signInWithEmailAndPassword(auth, email, password);
-		//console.log(res);
 
 		return res.user;
 	} catch (error: any) {

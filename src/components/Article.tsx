@@ -1,5 +1,5 @@
+import React, { memo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { hp, wp } from '../utils/Responsive_layout';
 import { Avatar } from 'react-native-paper';
@@ -10,19 +10,22 @@ import { useNavigation } from '@react-navigation/native';
 
 const Article = ({ item }) => {
 	const { cover, title, user, publicationTime } = item;
-	//console.log(item);
-
+	const { bookMarks } = useSelector((state) => state.user);
 	const { authInfo } = useSelector((state) => state.auth);
 	const { uid } = authInfo;
-
 	const owner = uid === user.id;
 
 	const date = new Date(publicationTime);
 	const postedAt = moment(date).fromNow();
 
 	const navigation = useNavigation();
+
+	const handleArticlePress = () => {
+		navigation.navigate('ArticleDetailsScreen', { item });
+	};
+
 	return (
-		<View style={{ ...styles.article, height: owner ? hp(100) : hp(120) }}>
+		<View style={[styles.article, { height: owner ? hp(100) : hp(120) }]}>
 			<View>
 				{cover ? (
 					<Image source={{ uri: cover }} style={styles.cover} />
@@ -36,18 +39,15 @@ const Article = ({ item }) => {
 				)}
 			</View>
 			<View
-				style={{
-					...styles.body,
-					justifyContent: owner ? 'space-evenly' : 'space-between',
-					marginVertical: owner ? 0 : 5,
-				}}
+				style={[
+					styles.body,
+					{
+						justifyContent: owner ? 'space-evenly' : 'space-between',
+						marginVertical: owner ? 0 : 5,
+					},
+				]}
 			>
-				<TouchableOpacity
-					activeOpacity={0.8}
-					onPress={() =>
-						navigation.navigate('ArticleDetailsScreen', { item })
-					}
-				>
+				<TouchableOpacity activeOpacity={0.8} onPress={handleArticlePress}>
 					<View style={styles.header}>
 						<Text
 							style={styles.title}
@@ -66,40 +66,46 @@ const Article = ({ item }) => {
 				)}
 				<View style={styles.footer}>
 					<Text>{postedAt}</Text>
-					{owner ? (
-						<View style={styles.iconContainer}>
-							<MaterialCommunityIcons
-								name='pencil-outline'
-								color={Colors.greyScale800}
-								size={20}
-							/>
-							<MaterialCommunityIcons
-								name='dots-vertical'
-								color={Colors.greyScale800}
-								size={20}
-							/>
-						</View>
-					) : (
-						<View style={styles.iconContainer}>
-							<MaterialCommunityIcons
-								name='bookmark-minus-outline'
-								color={Colors.greyScale800}
-								size={20}
-							/>
-							<MaterialCommunityIcons
-								name='dots-vertical'
-								color={Colors.greyScale800}
-								size={20}
-							/>
-						</View>
-					)}
+					<View style={styles.iconContainer}>
+						{owner ? (
+							<>
+								<MaterialCommunityIcons
+									name='pencil-outline'
+									color={Colors.greyScale800}
+									size={20}
+								/>
+								<MaterialCommunityIcons
+									name='dots-vertical'
+									color={Colors.greyScale800}
+									size={20}
+								/>
+							</>
+						) : (
+							<>
+								<MaterialCommunityIcons
+									name={
+										bookMarks.includes(item.id)
+											? 'bookmark-minus'
+											: 'bookmark-minus-outline'
+									}
+									color={Colors.primary900}
+									size={20}
+								/>
+								<MaterialCommunityIcons
+									name='dots-vertical'
+									color={Colors.greyScale800}
+									size={20}
+								/>
+							</>
+						)}
+					</View>
 				</View>
 			</View>
 		</View>
 	);
 };
 
-export default Article;
+export default memo(Article);
 
 const styles = StyleSheet.create({
 	article: {
@@ -108,7 +114,6 @@ const styles = StyleSheet.create({
 		height: hp(120),
 		alignSelf: 'center',
 		marginVertical: 10,
-
 		gap: 10,
 	},
 	cover: {
@@ -133,7 +138,7 @@ const styles = StyleSheet.create({
 	},
 	body: {
 		justifyContent: 'space-between',
-		width: '62%',
+		width: '65%',
 		marginVertical: 5,
 	},
 	iconContainer: {

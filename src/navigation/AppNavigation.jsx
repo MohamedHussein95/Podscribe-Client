@@ -4,6 +4,7 @@ import AuthNavigator from './AuthNavigation';
 import MainNavigator from './MainNavigation';
 import { useSelector } from 'react-redux';
 import StartUpScreen from '../../StartUpScreen';
+import UserProfileScreen from '../screens/profile/UserProfileScreen';
 
 const AppNavigator = ({ onReady }) => {
 	const isAuth = useSelector((state) => state.auth.isAuth);

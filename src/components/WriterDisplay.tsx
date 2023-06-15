@@ -1,19 +1,18 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
-	ActivityIndicator,
-	FlatList,
 	StyleSheet,
 	Text,
 	View,
+	ActivityIndicator,
+	FlatList,
 } from 'react-native';
 import { Colors } from '../constants';
 import { wp } from '../utils/Responsive_layout';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Writer from './Writer';
 
 const WriterDisplay = ({ title, DATA, loading }) => {
 	const [topWriters, setTopWriters] = useState([]);
-	//console.log(topWriters);
 
 	const sortedWriters = useMemo(() => {
 		const copy = [...DATA];
@@ -35,12 +34,11 @@ const WriterDisplay = ({ title, DATA, loading }) => {
 
 		return () => clearTimeout(timer);
 	}, [sortedWriters]);
+
 	return (
 		<View style={styles.display}>
 			<View style={styles.header}>
-				<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
-					{title}
-				</Text>
+				<Text style={styles.title}>{title}</Text>
 				<MaterialCommunityIcons
 					name='arrow-right-thin'
 					size={30}
@@ -48,7 +46,7 @@ const WriterDisplay = ({ title, DATA, loading }) => {
 				/>
 			</View>
 			{loading ? (
-				<ActivityIndicator size={'small'} color={Colors.primary900} />
+				<ActivityIndicator size='small' color={Colors.primary900} />
 			) : (
 				<FlatList
 					data={topWriters}
@@ -56,28 +54,10 @@ const WriterDisplay = ({ title, DATA, loading }) => {
 					keyExtractor={(item) => item.id}
 					showsHorizontalScrollIndicator={false}
 					renderItem={({ item }) => <Writer item={item} />}
-					style={{ flex: 1 }}
-					contentContainerStyle={{ paddingHorizontal: wp(15) }}
+					contentContainerStyle={styles.flatListContent}
 					ListEmptyComponent={
-						<View
-							style={{
-								marginVertical: 5,
-								flex: 1,
-								alignSelf: 'center',
-								alignItems: 'center',
-								justifyContent: 'center',
-								marginLeft: 50,
-							}}
-						>
-							<Text
-								style={{
-									fontFamily: 'Regular',
-									fontSize: wp(15),
-									color: Colors.greyScale400,
-								}}
-							>
-								No Writers Found!
-							</Text>
+						<View style={styles.emptyListComponent}>
+							<Text style={styles.emptyListText}>No Writers Found!</Text>
 						</View>
 					}
 				/>
@@ -94,5 +74,26 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		marginHorizontal: 10,
 		marginVertical: 5,
+	},
+	title: {
+		fontFamily: 'Bold',
+		fontSize: 20,
+		flex: 1,
+	},
+	flatListContent: {
+		paddingHorizontal: wp(15),
+	},
+	emptyListComponent: {
+		marginVertical: 5,
+		flex: 1,
+		alignSelf: 'center',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginLeft: 50,
+	},
+	emptyListText: {
+		fontFamily: 'Regular',
+		fontSize: wp(15),
+		color: Colors.greyScale400,
 	},
 });

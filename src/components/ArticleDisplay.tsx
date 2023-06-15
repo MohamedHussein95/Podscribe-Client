@@ -8,18 +8,23 @@ import Article from './Article';
 import { wp } from '../utils/Responsive_layout';
 
 const ArticleDisplay = ({ title, DATA }) => {
+	//console.log(DATA);
+
 	return (
 		<View style={styles.display}>
-			<View style={styles.header}>
-				<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
-					{title}
-				</Text>
-				<MaterialCommunityIcons
-					name='arrow-right-thin'
-					size={30}
-					color={Colors.primary900}
-				/>
-			</View>
+			{title && (
+				<View style={styles.header}>
+					<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
+						{title}
+					</Text>
+					<MaterialCommunityIcons
+						name='arrow-right-thin'
+						size={30}
+						color={Colors.primary900}
+					/>
+				</View>
+			)}
+
 			<FlatList
 				data={DATA}
 				showsVerticalScrollIndicator={false}
@@ -38,7 +43,7 @@ const ArticleDisplay = ({ title, DATA }) => {
 								color: Colors.greyScale400,
 							}}
 						>
-							No New Articles!
+							You have no Bookmarks!
 						</Text>
 					</View>
 				}
@@ -52,6 +57,7 @@ export default ArticleDisplay;
 const styles = StyleSheet.create({
 	display: {
 		marginVertical: 5,
+		flex: 1,
 	},
 	header: {
 		flexDirection: 'row',

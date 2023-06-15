@@ -17,7 +17,7 @@ import { Toast } from 'react-native-toast-message/lib/src/Toast';
 import { useSelector } from 'react-redux';
 import { RefreshControl } from 'react-native-gesture-handler';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
 	const [articles, setArticles] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -44,32 +44,15 @@ const HomeScreen = () => {
 	};
 
 	useEffect(() => {
-		getAllArticles();
+		const timer = setTimeout(() => {
+			getAllArticles();
+		}, 500);
+		return () => {
+			clearTimeout(timer);
+		};
 	}, []);
 	return (
 		<View style={styles.screen}>
-			<Appbar.Header style={{ backgroundColor: Colors.white }}>
-				<View
-					style={{
-						flex: 1,
-						flexDirection: 'row',
-						alignItems: 'center',
-						gap: 10,
-						marginLeft: 5,
-					}}
-				>
-					<Image
-						source={require('../../../assets/images/logo.png')}
-						style={{ width: wp(30), height: hp(30) }}
-					/>
-					<Appbar.Content
-						title='Podscribe'
-						titleStyle={{ fontFamily: 'Bold', fontSize: 18 }}
-					/>
-				</View>
-				<Appbar.Action icon={'bell-outline'} size={25} />
-				<Appbar.Action icon={'bookmark-minus-outline'} size={25} />
-			</Appbar.Header>
 			<ScrollView
 				style={{ flex: 1 }}
 				contentContainerStyle={{ paddingBottom: 10 }}
@@ -79,7 +62,42 @@ const HomeScreen = () => {
 						onRefresh={getAllArticles}
 					/>
 				}
+				showsVerticalScrollIndicator={false}
 			>
+				<Appbar.Header style={{ backgroundColor: Colors.white }}>
+					<View
+						style={{
+							flex: 1,
+							flexDirection: 'row',
+							alignItems: 'center',
+							gap: 10,
+							marginLeft: 5,
+						}}
+					>
+						<Image
+							source={require('../../../assets/images/logo.png')}
+							style={{ width: wp(30), height: hp(30) }}
+						/>
+						<Appbar.Content
+							title='Podscribe'
+							titleStyle={{ fontFamily: 'Bold', fontSize: 18 }}
+						/>
+					</View>
+					<Appbar.Action
+						icon={'bell-outline'}
+						size={25}
+						onPress={() => navigation.navigate('NotificationScreen')}
+					/>
+					<Appbar.Action
+						icon={'bookmark-minus-outline'}
+						size={25}
+						onPress={() =>
+							navigation.navigate('MyBookMarksScreen', {
+								DATA: articles,
+							})
+						}
+					/>
+				</Appbar.Header>
 				<ImageBackground
 					source={require('../../../assets/images/readMore.png')}
 					style={styles.introCard}

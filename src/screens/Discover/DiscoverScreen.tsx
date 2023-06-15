@@ -49,39 +49,17 @@ const DiscoverScreen = ({ navigation }) => {
 			});
 		}
 	};
-
 	useEffect(() => {
-		getAllArticles();
+		const timer = setTimeout(() => {
+			getAllArticles();
+		}, 500);
+		return () => {
+			clearTimeout(timer);
+		};
 	}, []);
 
 	return (
 		<View style={styles.screen}>
-			<Appbar.Header style={{ backgroundColor: Colors.white }}>
-				<View
-					style={{
-						flex: 1,
-						flexDirection: 'row',
-						alignItems: 'center',
-						gap: 10,
-						marginLeft: 5,
-					}}
-				>
-					<Image
-						source={require('../../../assets/images/logo.png')}
-						style={{ width: wp(30), height: hp(30) }}
-					/>
-					<Appbar.Content
-						title='Podscribe'
-						titleStyle={{ fontFamily: 'Bold', fontSize: 18 }}
-					/>
-				</View>
-
-				<Appbar.Action
-					icon={'dots-horizontal-circle-outline'}
-					size={30}
-					color={Colors.black}
-				/>
-			</Appbar.Header>
 			<ScrollView
 				style={{ flex: 1 }}
 				refreshControl={
@@ -90,7 +68,34 @@ const DiscoverScreen = ({ navigation }) => {
 						onRefresh={getAllArticles}
 					/>
 				}
+				showsVerticalScrollIndicator={false}
 			>
+				<Appbar.Header style={{ backgroundColor: Colors.white }}>
+					<View
+						style={{
+							flex: 1,
+							flexDirection: 'row',
+							alignItems: 'center',
+							gap: 10,
+							marginLeft: 5,
+						}}
+					>
+						<Image
+							source={require('../../../assets/images/logo.png')}
+							style={{ width: wp(30), height: hp(30) }}
+						/>
+						<Appbar.Content
+							title='Podscribe'
+							titleStyle={{ fontFamily: 'Bold', fontSize: 18 }}
+						/>
+					</View>
+
+					<Appbar.Action
+						icon={'dots-horizontal-circle-outline'}
+						size={30}
+						color={Colors.black}
+					/>
+				</Appbar.Header>
 				<Input
 					placeholder={'Search for articles or writer'}
 					onChangeText={setSearchText}

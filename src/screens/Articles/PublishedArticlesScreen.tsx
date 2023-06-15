@@ -79,7 +79,6 @@ const PublishedArticlesScreen = () => {
 				renderItem={({ item }) => <Article item={item} />}
 				contentContainerStyle={{
 					justifyContent: 'center',
-					paddingHorizontal: 10,
 				}}
 				style={{ flex: 1 }}
 				ListEmptyComponent={
@@ -105,6 +104,7 @@ export default PublishedArticlesScreen;
 const styles = StyleSheet.create({
 	screen: {
 		flex: 1,
+		marginTop: hp(15),
 		backgroundColor: Colors.white,
 	},
 });

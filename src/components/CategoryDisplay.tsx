@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
@@ -7,6 +6,7 @@ import {
 	Text,
 	View,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants';
 import Category from './Category';
 import { useGetTopicsMutation } from '../store/topicApiSlice';
@@ -22,17 +22,21 @@ const CategoryDisplay = ({ title, onPress, loading }) => {
 		const getTopics = async () => {
 			const userId = authInfo.uid;
 			const data = await getAllTopics(userId).unwrap();
-
 			setTopics(data);
 		};
 		getTopics();
 	}, []);
+
+	const renderEmptyComponent = () => (
+		<View style={styles.emptyContainer}>
+			<Text style={styles.emptyText}>No Topics Found!</Text>
+		</View>
+	);
+
 	return (
-		<View style={styles.display}>
+		<View style={styles.container}>
 			<View style={styles.header}>
-				<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
-					{title}
-				</Text>
+				<Text style={styles.title}>{title}</Text>
 				<MaterialCommunityIcons
 					name='arrow-right-thin'
 					size={30}
@@ -41,7 +45,7 @@ const CategoryDisplay = ({ title, onPress, loading }) => {
 				/>
 			</View>
 			{loading ? (
-				<ActivityIndicator size={'small'} color={Colors.primary900} />
+				<ActivityIndicator size='small' color={Colors.primary900} />
 			) : (
 				<FlatList
 					data={topics}
@@ -52,28 +56,7 @@ const CategoryDisplay = ({ title, onPress, loading }) => {
 						<Category item={item} style={undefined} />
 					)}
 					initialNumToRender={5}
-					ListEmptyComponent={
-						<View
-							style={{
-								marginVertical: 5,
-								flex: 1,
-								alignSelf: 'center',
-								alignItems: 'center',
-								justifyContent: 'center',
-								marginLeft: 50,
-							}}
-						>
-							<Text
-								style={{
-									fontFamily: 'Regular',
-									fontSize: wp(15),
-									color: Colors.greyScale400,
-								}}
-							>
-								No Topics Found!
-							</Text>
-						</View>
-					}
+					ListEmptyComponent={renderEmptyComponent}
 				/>
 			)}
 		</View>
@@ -83,12 +66,30 @@ const CategoryDisplay = ({ title, onPress, loading }) => {
 export default CategoryDisplay;
 
 const styles = StyleSheet.create({
-	display: {
+	container: {
 		marginVertical: 5,
 	},
 	header: {
 		flexDirection: 'row',
 		marginHorizontal: 10,
 		marginVertical: 5,
+	},
+	title: {
+		fontFamily: 'Bold',
+		fontSize: 20,
+		flex: 1,
+	},
+	emptyContainer: {
+		flex: 1,
+		alignSelf: 'center',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginLeft: 50,
+		marginVertical: 5,
+	},
+	emptyText: {
+		fontFamily: 'Regular',
+		fontSize: wp(15),
+		color: Colors.greyScale400,
 	},
 });

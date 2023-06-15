@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Modal, Portal } from 'react-native-paper';
 import { Colors } from '../constants';
@@ -9,17 +9,11 @@ const ModalLoader = ({ modalVisible, onDismiss }) => {
 		<Portal>
 			<Modal
 				visible={modalVisible}
-				onDismiss={onDismiss}
-				contentContainerStyle={styles.containerStyle}
+				onDismiss={undefined}
+				contentContainerStyle={styles.container}
 			>
-				<View
-					style={{
-						backgroundColor: Colors.primary900,
-						padding: 30,
-						borderRadius: 500,
-					}}
-				>
-					<ActivityIndicator size={'small'} color={Colors.white} />
+				<View style={styles.loaderContainer}>
+					<ActivityIndicator size='small' color={Colors.white} />
 				</View>
 			</Modal>
 		</Portal>
@@ -29,22 +23,13 @@ const ModalLoader = ({ modalVisible, onDismiss }) => {
 export default memo(ModalLoader);
 
 const styles = StyleSheet.create({
-	modalTitle: {
-		fontSize: 24,
-		fontFamily: 'Bold',
-		textAlign: 'center',
-		color: Colors.primary500,
-	},
-
-	containerStyle: {
-		backgroundColor: Colors.white,
-		padding: 20,
-		height: hp(80),
-		width: '20%',
-		alignSelf: 'center',
-		borderRadius: 20,
+	container: {
 		alignItems: 'center',
 		justifyContent: 'center',
-		gap: 0,
+	},
+	loaderContainer: {
+		backgroundColor: Colors.primary900,
+		padding: 30,
+		borderRadius: 500,
 	},
 });

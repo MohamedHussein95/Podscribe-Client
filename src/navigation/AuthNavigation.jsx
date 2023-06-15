@@ -8,6 +8,11 @@ import OtpScreen from '../screens/signIn&forgotpassword/OtpScreen';
 import CreateNewPasswordScreen from '../screens/signIn&forgotpassword/CreateNewPasswordScreen';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CreateFormScreen from '../screens/onboarding/CreateFormScreen';
+import SelectCountryScreen from '../screens/onboarding/SelectCountryScreen';
+import ProfileSetupFormScreen from '../screens/onboarding/ProfileSetupFormScreen';
+import SelectTopicScreen from '../screens/onboarding/SelectTopicScreen';
+import DiscoverPeopleScreen from '../screens/onboarding/DiscoverPeopleScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +64,20 @@ function AuthStack() {
 			<Stack.Screen
 				name='CreateNewPasswordScreen'
 				component={CreateNewPasswordScreen}
+			/>
+
+			<Stack.Screen
+				name='SelectCountryScreen'
+				component={SelectCountryScreen}
+			/>
+			<Stack.Screen
+				name='ProfileSetupFormScreen'
+				component={ProfileSetupFormScreen}
+			/>
+			<Stack.Screen name='SelectTopicScreen' component={SelectTopicScreen} />
+			<Stack.Screen
+				name='DiscoverPeopleScreen'
+				component={DiscoverPeopleScreen}
 			/>
 		</Stack.Navigator>
 	);

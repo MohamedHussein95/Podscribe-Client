@@ -1,24 +1,18 @@
-import {
-	Image,
-	ImageBackground,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native';
-import React from 'react';
+import React, { memo } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { hp, wp } from '../utils/Responsive_layout';
 import { Colors } from '../constants';
 import moment from 'moment';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Toast } from 'react-native-toast-message/lib/src/Toast';
 import { useAddToBookMarksMutation } from '../store/articleApiSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBookMarks } from '../store/userSlice';
+import { ImageBackground } from 'react-native';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
-const Card = ({ item }: any) => {
+const Card = ({ item }) => {
 	const { title, cover, user, postedAt } = item;
 	const { authInfo } = useSelector((state) => state.auth);
 	const { bookMarks } = useSelector((state) => state.user);
@@ -27,6 +21,7 @@ const Card = ({ item }: any) => {
 	const dispatch = useDispatch();
 
 	const [addToBookMarks] = useAddToBookMarksMutation();
+
 	const handleBookMark = async () => {
 		const body = {
 			id: authInfo.uid,
@@ -40,7 +35,7 @@ const Card = ({ item }: any) => {
 			dispatch(setBookMarks(bookMarksData));
 			Toast.show({
 				type: 'success',
-				text1: `Added To BookMarks`,
+				text1: `Added To Bookmarks`,
 				position: 'top',
 			});
 		} catch (error) {
@@ -51,50 +46,50 @@ const Card = ({ item }: any) => {
 			});
 		}
 	};
-	return (
-		<TouchableOpacity
-			activeOpacity={0.8}
-			onPress={() => navigation.navigate('ArticleDetailsScreen', { item })}
-		>
-			<View style={styles.card}>
-				{cover ? (
-					<ImageBackground
-						source={{ uri: cover }}
-						style={styles.cover}
-						resizeMode='cover'
-					>
-						<View
-							style={{
-								alignSelf: 'flex-end',
-								backgroundColor: Colors.primary900,
-								margin: 5,
-								borderRadius: 33,
-								padding: 5,
-								justifyContent: 'center',
-								alignItems: 'center',
-							}}
-						>
-							<TouchableOpacity onPress={handleBookMark}>
-								<MaterialCommunityIcons
-									name={
-										bookMarks.includes(item.id)
-											? 'bookmark-minus'
-											: 'bookmark-minus-outline'
-									}
-									size={25}
-									color={Colors.white}
-								/>
-							</TouchableOpacity>
-						</View>
-					</ImageBackground>
-				) : (
-					<View style={styles.noCover}>
-						<Image
-							source={require('../../assets/images/logo_pl.png')}
-							style={styles.cover}
-						/>
+
+	const navigateToArticleDetails = () => {
+		navigation.navigate('ArticleDetailsScreen', { item });
+	};
+
+	const renderCoverImage = () => {
+		if (cover) {
+			return (
+				<ImageBackground
+					source={{ uri: cover }}
+					style={styles.cover}
+					resizeMode='cover'
+				>
+					<View style={styles.bookmarkContainer}>
+						<TouchableOpacity onPress={handleBookMark}>
+							<MaterialCommunityIcons
+								name={
+									bookMarks.includes(item.id)
+										? 'bookmark-minus'
+										: 'bookmark-minus-outline'
+								}
+								size={25}
+								color={Colors.white}
+							/>
+						</TouchableOpacity>
 					</View>
-				)}
+				</ImageBackground>
+			);
+		} else {
+			return (
+				<View style={styles.noCover}>
+					<Image
+						source={require('../../assets/images/logo_pl.png')}
+						style={styles.cover}
+					/>
+				</View>
+			);
+		}
+	};
+
+	return (
+		<TouchableOpacity activeOpacity={0.8} onPress={navigateToArticleDetails}>
+			<View style={styles.card}>
+				{renderCoverImage()}
 
 				<View style={styles.titleContainer}>
 					<Text
@@ -113,7 +108,7 @@ const Card = ({ item }: any) => {
 							numberOfLines={1}
 							ellipsizeMode='tail'
 						>
-							{user.fullName}
+							{user.fullName.trimEnd().split(' ').pop()}
 						</Text>
 					</View>
 					<View style={styles.timeContainer}>
@@ -124,7 +119,7 @@ const Card = ({ item }: any) => {
 						>
 							{moment(postedAt).fromNow(true)}
 						</Text>
-						<MaterialCommunityIcons name='dots-vertical' size={15} />
+						<MaterialCommunityIcons name='dots-vertical' size={18} />
 					</View>
 				</View>
 			</View>
@@ -132,19 +127,32 @@ const Card = ({ item }: any) => {
 	);
 };
 
-export default Card;
+export default memo(Card);
 
 const styles = StyleSheet.create({
 	card: {
-		marginHorizontal: 10,
+		marginRight: 5,
 		width: wp(200),
 		alignItems: 'center',
 		overflow: 'hidden',
 		height: hp(240),
+		borderRadius: 8,
+		backgroundColor: Colors.white,
+	},
+	bookmarkContainer: {
+		position: 'absolute',
+		top: 5,
+		right: 5,
+		backgroundColor: Colors.primary900,
+		borderRadius: 16,
+		padding: 5,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 	titleContainer: {
 		alignSelf: 'flex-start',
 		marginVertical: 5,
+		paddingHorizontal: 10,
 	},
 	title: {
 		fontFamily: 'SemiBold',
@@ -156,15 +164,16 @@ const styles = StyleSheet.create({
 		width: '100%',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
-
 		position: 'absolute',
 		bottom: 0,
+		paddingHorizontal: 10,
+		paddingVertical: 5,
 	},
 	userContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		gap: 4,
-		width: wp(80),
+		width: wp(100),
 	},
 	timeContainer: {
 		flexDirection: 'row',
@@ -179,16 +188,19 @@ const styles = StyleSheet.create({
 		fontFamily: 'SemiBold',
 		fontSize: wp(12),
 		color: Colors.primary900,
-
 		width: '90%',
 	},
-
 	noCover: {
 		backgroundColor: Colors.greyScale300,
-	},
-	cover: {
-		borderRadius: 10,
 		width: wp(200),
 		height: hp(150),
+		borderRadius: 8,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	cover: {
+		width: wp(200),
+		height: hp(150),
+		borderRadius: 8,
 	},
 });

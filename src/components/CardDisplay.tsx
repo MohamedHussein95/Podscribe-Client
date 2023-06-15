@@ -43,6 +43,7 @@ const CardDisplay = ({ title, onPress, DATA, loading }) => {
 
 		return () => clearTimeout(timer);
 	}, [sortedArticles]);
+
 	const handlePress = () => {
 		if (title === TITLE_MOST_POPULAR) {
 			navigation.navigate('PopularArticlesScreen', { articles });
@@ -52,9 +53,7 @@ const CardDisplay = ({ title, onPress, DATA, loading }) => {
 	return (
 		<View style={styles.display}>
 			<View style={styles.header}>
-				<Text style={{ fontFamily: 'Bold', fontSize: 20, flex: 1 }}>
-					{title}
-				</Text>
+				<Text style={styles.titleText}>{title}</Text>
 				<MaterialCommunityIcons
 					name='arrow-right-thin'
 					size={30}
@@ -63,7 +62,7 @@ const CardDisplay = ({ title, onPress, DATA, loading }) => {
 				/>
 			</View>
 			{loading ? (
-				<ActivityIndicator size={'small'} color={Colors.primary900} />
+				<ActivityIndicator size='small' color={Colors.primary900} />
 			) : (
 				<FlatList
 					data={articles}
@@ -72,38 +71,19 @@ const CardDisplay = ({ title, onPress, DATA, loading }) => {
 					showsHorizontalScrollIndicator={false}
 					renderItem={({ item }) => <Card item={item} />}
 					ListEmptyComponent={
-						<View
-							style={{
-								marginVertical: 5,
-								flex: 1,
-								alignSelf: 'center',
-								alignItems: 'center',
-								justifyContent: 'center',
-								marginLeft: 50,
-							}}
-						>
-							<Text
-								style={{
-									fontFamily: 'Regular',
-									fontSize: wp(15),
-									color: Colors.greyScale400,
-								}}
-							>
-								{title === TITLE_MOST_POPULAR && (
-									<Text>No Popular Articles</Text>
-								)}
-								{title === TITLE_RECENT_ARTICLES && (
-									<Text>No Recent Articles</Text>
-								)}
-								{title === TITLE_YOUR_ARTICLES && (
-									<Text>You Have No Articles</Text>
-								)}
-								{title === TITLE_ON_YOUR_BOOKMARK && (
-									<Text>You Have No BookMarks</Text>
-								)}
+						<View style={styles.emptyListComponent}>
+							<Text style={styles.emptyListText}>
+								{title === TITLE_MOST_POPULAR && 'No Popular Articles'}
+								{title === TITLE_RECENT_ARTICLES &&
+									'No Recent Articles'}
+								{title === TITLE_YOUR_ARTICLES &&
+									'You Have No Articles'}
+								{title === TITLE_ON_YOUR_BOOKMARK &&
+									'You Have No Bookmarks'}
 							</Text>
 						</View>
 					}
+					contentContainerStyle={{ paddingHorizontal: wp(10) }}
 				/>
 			)}
 		</View>
@@ -120,6 +100,25 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		marginHorizontal: 10,
 		marginVertical: 5,
+		alignItems: 'center',
+	},
+	titleText: {
+		fontFamily: 'Bold',
+		fontSize: 20,
+		flex: 1,
+	},
+	emptyListComponent: {
+		flex: 1,
+		alignSelf: 'center',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginLeft: 50,
+		marginVertical: 5,
+	},
+	emptyListText: {
+		fontFamily: 'Regular',
+		fontSize: wp(15),
+		color: Colors.greyScale400,
 	},
 });
 
